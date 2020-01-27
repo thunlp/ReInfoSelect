@@ -6,54 +6,48 @@ import torch.nn.functional as F
 from model_utils import kernal_mus, kernel_sigmas
 
 class edrm(nn.Module):
-    def __init__(self, cfg, embedding_init=None):
+    def __init__(self, args, embedding_init=None):
         super(edrm, self).__init__()
-        self.d_word_vec = cfg["embedding_dim"]
-        tensor_mu = torch.FloatTensor(kernal_mus(cfg["n_kernels"]))
-        tensor_sigma = torch.FloatTensor(kernel_sigmas(cfg["n_kernels"]))
+        self.d_word_vec = args.embed_dim
+        tensor_mu = torch.FloatTensor(kernal_mus(args.n_kernels))
+        tensor_sigma = torch.FloatTensor(kernel_sigmas(args.n_kernels))
         if torch.cuda.is_available():
             tensor_mu = tensor_mu.cuda()
             tensor_sigma = tensor_sigma.cuda()
-        self.mu = Variable(tensor_mu, requires_grad=False).view(1, 1, 1, cfg["n_kernels"])
-        self.sigma = Variable(tensor_sigma, requires_grad=False).view(1, 1, 1, cfg["n_kernels"])
+        self.mu = Variable(tensor_mu, requires_grad=False).view(1, 1, 1, args.n_kernels)
+        self.sigma = Variable(tensor_sigma, requires_grad=False).view(1, 1, 1, args.n_kernels)
         
-        self.embedding = nn.Embedding(cfg["vocab_size"], cfg["embedding_dim"])
+        self.embedding = nn.Embedding(args.vocab_size, args.embed_dim)
         if embedding_init is not None:
             em = torch.tensor(embedding_init, dtype=torch.float32)
             self.embedding.weight = nn.Parameter(em)
             self.embedding.weight.requires_grad = True
 
-        self.entemb = nn.Embedding(cfg["ent_size"], 128)
-        if entemb is not None:
-            em = torch.tensor(entemb_init, dtype=torch.float32)
-            self.entemb.weight = nn.Parameter(em)
-            self.entemb.weight.requires_grad = True
+        self.entemb = nn.Embedding(args.ent_size, 128)
 
-        self.ent_q_size= 5
+        self.ent_q_size = 5
         self.ent_d_size = 10
 
         self.tanh = nn.Tanh()
         self.conv_des = nn.Sequential(
-            nn.Conv1d(1, 128, cfg["embedding_dim"] * 5, stride=cfg["embedding_dim"]),
+            nn.Conv1d(1, 128, args.embed_dim * 5, stride=args.embed_dim),
             nn.ReLU(),
             nn.MaxPool1d(20 - 5 + 1),
         )
         self.conv_uni = nn.Sequential(
-            nn.Conv2d(1, 128, (1, cfg["embedding_dim"])),
+            nn.Conv2d(1, 128, (1, args.embedding_dim)),
             nn.ReLU()
         )
         self.conv_bi = nn.Sequential(
-            nn.Conv2d(1, 128, (2, cfg["embedding_dim"])),
+            nn.Conv2d(1, 128, (2, args.embed_dim)),
             nn.ReLU()
         )
         self.conv_tri = nn.Sequential(
-            nn.Conv2d(1, 128, (3, cfg["embedding_dim"])),
+            nn.Conv2d(1, 128, (3, args.embed_dim)),
             nn.ReLU()
         )
 
-        feature_dim = cfg["n_kernels"] * 16
-        if cfg["score_feature"]:
-            feature_dim = cfg["n_kernel"] * 16 + 1
+        feature_dim = args.n_kernel * 16 + 1
         self.dense = nn.Linear(feature_dim, 1)
 
     def get_intersect_matrix(self, q_embed, d_embed, atten_q, atten_d):

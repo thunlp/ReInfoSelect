@@ -87,8 +87,8 @@ def tok2idx(toks, word2idx):
             input_ids.append(word2idx['<UNK>'])
     return input_ids
 
-def read_train_to_features(cfg, word2idx, tokenizer):
-    with open(cfg["train"], 'r') as reader:
+def read_train_to_features(args, word2idx, tokenizer):
+    with open(args.train, 'r') as reader:
         features = []
         for line in reader:
             s = line.strip('\n').split('\t')
@@ -97,29 +97,19 @@ def read_train_to_features(cfg, word2idx, tokenizer):
             pos_toks = s[1].split()
             neg_toks = s[2].split()
 
-            if cfg["stopword_removal"]:
-                query_toks = stopword_removal(query_toks)
-                pos_toks = stopword_removal(pos_toks)
-                neg_toks = stopword_removal(neg_toks)
-
-            if cfg["stemming"]:
-                query_toks = stemming(query_toks)
-                pos_toks = stemming(pos_toks)
-                neg_toks = stemming(neg_toks)
-
-            query_toks = query_toks[:cfg["channels"]]
-            pos_toks = pos_toks[:cfg["max_seq_len"]]
-            neg_toks = neg_toks[:cfg["max_seq_len"]]
+            query_toks = query_toks[:20]
+            pos_toks = pos_toks[:args.max_seq_len]
+            neg_toks = neg_toks[:args.max_seq_len]
 
             query_len = len(query_toks)
             pos_len = len(pos_toks)
             neg_len = len(neg_toks)
 
-            while len(query_toks) < cfg["channels"]:
+            while len(query_toks) < 20:
                 query_toks.append('<PAD>')
-            while len(pos_toks) < cfg["max_seq_len"]:
+            while len(pos_toks) < args.max_seq_len:
                 pos_toks.append('<PAD>')
-            while len(neg_toks) < cfg["max_seq_len"]:
+            while len(neg_toks) < args.max_seq_len:
                 neg_toks.append('<PAD>')
 
             query_idx = tok2idx(query_toks, word2idx)
@@ -156,8 +146,8 @@ def read_train_to_features(cfg, word2idx, tokenizer):
                 n_segment_ids = n_segment_ids))
         return features
 
-def read_dev_to_features(cfg, tokenizer):
-    with open(cfg["train"], 'r') as reader:
+def read_dev_to_features(args, tokenizer):
+    with open(args.train, 'r') as reader:
         features = []
         for line in reader:
             s = line.strip('\n').split('\t')
@@ -169,23 +159,15 @@ def read_dev_to_features(cfg, tokenizer):
             doc_id = s[4]
             raw_score = float(s[5])
 
-            if cfg["stopword_removal"]:
-                query_toks = stopword_removal(query_toks)
-                doc_toks = stopword_removal(doc_toks)
-
-            if cfg["stemming"]:
-                query_toks = stemming(query_toks)
-                doc_toks = stemming(doc_toks)
-
-            query_toks = query_toks[:cfg["channels"]]
-            doc_toks = doc_toks[:cfg["max_seq_len"]]
+            query_toks = query_toks[:20]
+            doc_toks = doc_toks[:args.max_seq_len]
 
             query_len = len(query_toks)
             doc_len = len(doc_toks)
 
-            while len(query_toks) < cfg["channels"]:
+            while len(query_toks) < 20:
                 query_toks.append('<PAD>')
-            while len(doc_toks) < cfg["max_seq_len"]:
+            while len(doc_toks) < args.max_seq_len:
                 doc_toks.append('<PAD>')
 
             s[0] = ' '.join(query_toks)

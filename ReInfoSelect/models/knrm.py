@@ -6,25 +6,23 @@ import torch.nn.functional as F
 from model_utils import kernal_mus, kernel_sigmas
 
 class knrm(nn.Module):
-    def __init__(self, cfg, embedding_init=None):
+    def __init__(self, args, embedding_init=None):
         super(knrm, self).__init__()
-        tensor_mu = torch.FloatTensor(kernal_mus(cfg["n_kernels"]))
-        tensor_sigma = torch.FloatTensor(kernel_sigmas(cfg["n_kernels"]))
+        tensor_mu = torch.FloatTensor(kernal_mus(args.n_kernels))
+        tensor_sigma = torch.FloatTensor(kernel_sigmas(args.n_kernels))
         if torch.cuda.is_available():
             tensor_mu = tensor_mu.cuda()
             tensor_sigma = tensor_sigma.cuda()
-        self.mu = Variable(tensor_mu, requires_grad=False).view(1, 1, 1, cfg["n_kernels"])
-        self.sigma = Variable(tensor_sigma, requires_grad=False).view(1, 1, 1, cfg["n_kernels"])
+        self.mu = Variable(tensor_mu, requires_grad=False).view(1, 1, 1, args.n_kernels)
+        self.sigma = Variable(tensor_sigma, requires_grad=False).view(1, 1, 1, args.n_kernels)
 
-        self.embedding = nn.Embedding(cfg["vocab_size"], cfg["embedding_dim"])
+        self.embedding = nn.Embedding(args.vocab_size, args.embed_dim)
         if embedding_init is not None:
             em = torch.tensor(embedding_init, dtype=torch.float32)
             self.embedding.weight = nn.Parameter(em)
             self.embedding.weight.requires_grad = True
 
-        feature_dim = cfg["n_kernels"]
-        if cfg["score_feature"]:
-            feature_dim = cfg["n_kernels"] + 1
+        feature_dim = args.n_kernels + 1
         self.dense = nn.Linear(feature_dim, 1)
 
     def get_intersect_matrix(self, q_embed, d_embed, attn_q, attn_d):

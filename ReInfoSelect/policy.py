@@ -26,28 +26,28 @@ def kernel_sigmas(n_kernels):
     return l_sigma
 
 class all_policy(nn.Module):
-    def __init__(self, cfg, embedding_init=None):
+    def __init__(self, args, embedding_init=None):
         super(all_policy, self).__init__()
-        tensor_mu = torch.FloatTensor(kernal_mus(cfg["n_kernels"]))
-        tensor_sigma = torch.FloatTensor(kernel_sigmas(cfg["n_kernels"]))
+        tensor_mu = torch.FloatTensor(kernal_mus(args.n_kernels))
+        tensor_sigma = torch.FloatTensor(kernel_sigmas(args.n_kernels))
         if torch.cuda.is_available():
             tensor_mu = tensor_mu.cuda()
             tensor_sigma = tensor_sigma.cuda()
-        self.mu = Variable(tensor_mu, requires_grad=False).view(1, 1, 1, cfg["n_kernels"])
-        self.sigma = Variable(tensor_sigma, requires_grad=False).view(1, 1, 1, cfg["n_kernels"])
+        self.mu = Variable(tensor_mu, requires_grad=False).view(1, 1, 1, args.n_kernels)
+        self.sigma = Variable(tensor_sigma, requires_grad=False).view(1, 1, 1, args.n_kernels)
 
-        self.embedding = nn.Embedding(cfg["vocab_size"], cfg["embedding_dim"])
+        self.embedding = nn.Embedding(args.vocab_size, args.embed_dim)
         if embedding_init is not None:
             em = torch.tensor(embedding_init, dtype=torch.float32)
             self.embedding.weight = nn.Parameter(em)
             self.embedding.weight.requires_grad = True
 
-        self.q_clas = tx.modules.Conv1DClassifier(cfg["channels"], cfg["embedding_dim"], {'num_classes': 0})
-        self.d_clas = tx.modules.Conv1DClassifier(cfg["channels"], cfg["embedding_dim"], {'num_classes': 0})
+        self.q_clas = tx.modules.Conv1DClassifier(20, args.embed_dim, {'num_classes': 0})
+        self.d_clas = tx.modules.Conv1DClassifier(20, args.embed_dim, {'num_classes': 0})
 
         self.q_actor = nn.Linear(256, 2)
         self.d_actor = nn.Linear(256, 2)
-        self.qd_actor = nn.Linear(cfg["n_kernels"], 2)
+        self.qd_actor = nn.Linear(args.n_kernels, 2)
 
         self.actor = nn.Linear(3, 1)
     def forward(self, query_idx, doc_idx, query_len, doc_len):

@@ -54,8 +54,8 @@ def tok2idx(toks, word2idx):
             input_ids.append(word2idx['<UNK>'])
     return input_ids
 
-def read_train_to_features(cfg, word2idx):
-    with open(cfg["train"], 'r') as reader:
+def read_train_to_features(args, word2idx):
+    with open(args.train, 'r') as reader:
         features = []
         for line in reader:
             s = line.strip('\n').split('\t')
@@ -64,29 +64,27 @@ def read_train_to_features(cfg, word2idx):
             pos_toks = s[1].split()
             neg_toks = s[2].split()
 
-            if cfg["stopword_removal"]:
-                query_toks = stopword_removal(query_toks)
-                pos_toks = stopword_removal(pos_toks)
-                neg_toks = stopword_removal(neg_toks)
+            query_toks = stopword_removal(query_toks)
+            pos_toks = stopword_removal(pos_toks)
+            neg_toks = stopword_removal(neg_toks)
 
-            if cfg["stemming"]:
-                query_toks = stemming(query_toks)
-                pos_toks = stemming(pos_toks)
-                neg_toks = stemming(neg_toks)
+            query_toks = stemming(query_toks)
+            pos_toks = stemming(pos_toks)
+            neg_toks = stemming(neg_toks)
 
-            query_toks = query_toks[:cfg["channels"]]
-            pos_toks = pos_toks[:cfg["max_seq_len"]]
-            neg_toks = neg_toks[:cfg["max_seq_len"]]
+            query_toks = query_toks[:20]
+            pos_toks = pos_toks[:args.max_seq_len]
+            neg_toks = neg_toks[:args.max_seq_len]
 
             query_len = len(query_toks)
             pos_len = len(pos_toks)
             neg_len = len(neg_toks)
 
-            while len(query_toks) < cfg["channels"]:
+            while len(query_toks) < 20:
                 query_toks.append('<PAD>')
-            while len(pos_toks) < cfg["max_seq_len"]:
+            while len(pos_toks) < args.max_seq_len:
                 pos_toks.append('<PAD>')
-            while len(neg_toks) < cfg["max_seq_len"]:
+            while len(neg_toks) < args.max_seq_len:
                 neg_toks.append('<PAD>')
 
             query_idx = tok2idx(query_toks, word2idx)
@@ -102,8 +100,8 @@ def read_train_to_features(cfg, word2idx):
                 neg_len = neg_len))
         return features
 
-def read_dev_to_features(cfg, word2idx):
-    with open(cfg["dev"], 'r') as reader:
+def read_dev_to_features(args, word2idx):
+    with open(args.dev, 'r') as reader:
         features = []
         for line in reader:
             s = line.strip('\n').split('\t')
@@ -115,23 +113,21 @@ def read_dev_to_features(cfg, word2idx):
             doc_id = s[4]
             score_feature = float(s[5])
 
-            if cfg["stopword_removal"]:
-                query_toks = stopword_removal(query_toks)
-                doc_toks = stopword_removal(doc_toks)
+            query_toks = stopword_removal(query_toks)
+            doc_toks = stopword_removal(doc_toks)
 
-            if cfg["stemming"]:
-                query_toks = stemming(query_toks)
-                doc_toks = stemming(doc_toks)
+            query_toks = stemming(query_toks)
+            doc_toks = stemming(doc_toks)
 
-            query_toks = query_toks[:cfg["channels"]]
-            doc_toks = doc_toks[:cfg["max_seq_len"]]
+            query_toks = query_toks[:20]
+            doc_toks = doc_toks[:args.max_seq_len]
 
             query_len = len(query_toks)
             doc_len = len(doc_toks)
 
-            while len(query_toks) < cfg["channels"]:
+            while len(query_toks) < 20:
                 query_toks.append('<PAD>')
-            while len(doc_toks) < cfg["max_seq_len"]:
+            while len(doc_toks) < args.max_seq_len:
                 doc_toks.append('<PAD>')
 
             query_idx = tok2idx(query_toks, word2idx)
@@ -148,15 +144,15 @@ def read_dev_to_features(cfg, word2idx):
                 doc_len = doc_len))
         return features
 
-def train_dataloader(cfg, tokenizer, shuffle=False):
-    features = read_train_to_features(cfg, tokenizer)
+def train_dataloader(args, tokenizer, shuffle=False):
+    features = read_train_to_features(args, tokenizer)
     n_samples = len(features)
     idx = np.arange(n_samples)
     if shuffle:
         np.random.shuffle(idx)
 
-    for start_idx in range(0, n_samples, cfg["batch_size"]):
-        batch_idx = idx[start_idx:start_idx+cfg["batch_size"]]
+    for start_idx in range(0, n_samples, args.batch_size):
+        batch_idx = idx[start_idx:start_idx+args.batch_size]
 
         query_idx = [torch.tensor(features[i].query_idx, dtype=torch.long) for i in batch_idx]
         pos_idx = [torch.tensor(features[i].pos_idx, dtype=torch.long) for i in batch_idx]
@@ -173,13 +169,13 @@ def train_dataloader(cfg, tokenizer, shuffle=False):
         yield batch
     return
 
-def dev_dataloader(cfg, tokenizer):
-    features = read_dev_to_features(cfg, tokenizer)
+def dev_dataloader(args, tokenizer):
+    features = read_dev_to_features(args, tokenizer)
     n_samples = len(features)
     idx = np.arange(n_samples)
     batches = []
-    for start_idx in range(0, n_samples, cfg["batch_size"]):
-        batch_idx = idx[start_idx:start_idx+cfg["batch_size"]]
+    for start_idx in range(0, n_samples, args.batch_size):
+        batch_idx = idx[start_idx:start_idx+args.batch_size]
 
         query_id = [features[i].query_id for i in batch_idx]
         doc_id = [features[i].doc_id for i in batch_idx]

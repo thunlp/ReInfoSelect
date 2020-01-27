@@ -9,17 +9,17 @@ from allennlp.modules.matrix_attention.dot_product_matrix_attention import *
 from allennlp.modules.seq2seq_encoders import StackedSelfAttentionEncoder,MultiHeadSelfAttention
 
 class tk(nn.Module):
-    def __init__(self, cfg, embedding_init=None):
+    def __init__(self, args, embedding_init=None):
         super(tk, self).__init__()
-        tensor_mu = torch.FloatTensor(kernal_mus(cfg["n_kernels"]))
-        tensor_sigma = torch.FloatTensor(kernel_sigmas(cfg["n_kernels"]))
+        tensor_mu = torch.FloatTensor(kernal_mus(args.n_kernels))
+        tensor_sigma = torch.FloatTensor(kernel_sigmas(args.n_kernels))
         if torch.cuda.is_available():
             tensor_mu = tensor_mu.cuda()
             tensor_sigma = tensor_sigma.cuda()
-        self.mu = Variable(tensor_mu, requires_grad=False).view(1, 1, 1, cfg["n_kernels"])
-        self.sigma = Variable(tensor_sigma, requires_grad=False).view(1, 1, 1, cfg["n_kernels"])
+        self.mu = Variable(tensor_mu, requires_grad=False).view(1, 1, 1, args.n_kernels)
+        self.sigma = Variable(tensor_sigma, requires_grad=False).view(1, 1, 1, args.n_kernels)
 
-        self.embedding = nn.Embedding(cfg["vocab_size"], cfg["embedding_dim"])
+        self.embedding = nn.Embedding(args.vocab_size, args.embed_dim)
         if embedding_init is not None:
             em = torch.tensor(embedding_init, dtype=torch.float32)
             self.embedding.weight = nn.Parameter(em)
@@ -27,8 +27,8 @@ class tk(nn.Module):
 
         self.nn_scaler = nn.Parameter(torch.full([1], 0.01, dtype=torch.float32, requires_grad=True))
         self.mixer = nn.Parameter(torch.full([1,1,1], 0.5, dtype=torch.float32, requires_grad=True))
-        self.stacked_att = StackedSelfAttentionEncoder(input_dim=cfg["embedding_dim"],
-                 hidden_dim=cfg["embedding_dim"],
+        self.stacked_att = StackedSelfAttentionEncoder(input_dim=args.embed_dim,
+                 hidden_dim=args.embed_dim,
                  projection_dim=32,
                  feedforward_hidden_dim=100,
                  num_layers=2,
@@ -37,10 +37,8 @@ class tk(nn.Module):
                  residual_dropout_prob = 0,
                  attention_dropout_prob = 0)
         self.cosine_module = CosineMatrixAttention()
-        self.dense = nn.Linear(cfg["n_kernels"], 1, bias=False)
-        #self.dense_mean = nn.Linear(num_kernels, 1, bias=False)
-        #self.dense_comb = nn.Linear(2, 1, bias=False)
-        self.dense_fpp = nn.Linear(cfg["n_kernels"] + 1, 1, bias=False)# toby add
+        self.dense = nn.Linear(args.n_kernels, 1, bias=False)
+        self.dense_fpp = nn.Linear(args.n_kernels + 1, 1, bias=False)
 
         torch.nn.init.uniform_(self.dense.weight, -0.014, 0.014)  # inits taken from matchzoo
         #torch.nn.init.uniform_(self.dense_mean.weight, -0.014, 0.014)  # inits taken from matchzoo

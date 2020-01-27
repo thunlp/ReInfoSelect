@@ -1,6 +1,6 @@
 import numpy as np
 
-def embloader(cfg):
+def embloader(args):
     idx = 0
     idx2word = []
     word2idx = {}
@@ -17,7 +17,7 @@ def embloader(cfg):
     word2vec['<UNK>'] = np.random.normal(scale=0.6, size=(300, ))
     idx += 1
 
-    with open(cfg["word2vec"], 'r') as f:
+    with open(args.embed, 'r') as f:
         for line in f:
             val = line.split()
             idx2word.append(val[0])
@@ -25,7 +25,7 @@ def embloader(cfg):
             word2vec[val[0]] = np.asarray(val[1:], dtype='float32')
             idx += 1
 
-    embedding_init = np.zeros((len(idx2word), cfg["embedding_dim"]))
+    embedding_init = np.zeros((len(idx2word), args.embed_dim))
     for idx, word in enumerate(idx2word):
         embedding_init[idx] = word2vec[word]
 

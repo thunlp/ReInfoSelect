@@ -2,15 +2,13 @@ import torch.nn as nn
 from transformers import *
 
 class BertForRanking(nn.Module):
-    def __init__(self, cfg):
+    def __init__(self, args):
         super(BertForRanking, self).__init__()
-        config = BertConfig.from_pretrained(cfg["config"])
-        self.bert = BertModel.from_pretrained(cfg["model"], config=config)
+        config = BertConfig.from_pretrained(args.bert)
+        self.bert = BertModel.from_pretrained(args.bert, config=config)
         self.bert.train()
 
-        feature_dim = config.hidden_size
-        if cfg["score_feature"]:
-            feature_dim = config.hidden_size + 1
+        feature_dim = config.hidden_size + 1
         self.dense = nn.Linear(feature_dim, 1)
 
     def forward(self, inst, tok, mask, score_feature=None):
