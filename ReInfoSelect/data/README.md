@@ -1,6 +1,6 @@
 # Data Preparation
 
-All the data is located in this `/data` folder.
+All data are located in this `/data` folder.
 
 # Data Format
 
@@ -9,5 +9,5 @@ All the data is located in this `/data` folder.
 query \t doc_pos \t doc_neg
 
 # Dev
-query \t doc \t label \t query_id \t doc_id \t score
+query \t doc \t label \t query_id \t doc_id \t score (learning to rank)
 ```
