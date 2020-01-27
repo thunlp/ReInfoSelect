@@ -8,9 +8,9 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 
 from dataloaders import *
+from policies import *
+from models import *
 from metrics import *
-from policy import *
-from ranker import *
 
 def dev(cfg, model, dev_data, device):
     rst_dict = {}
