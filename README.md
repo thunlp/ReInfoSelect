@@ -1,5 +1,5 @@
 # ReInfoSelect
-Code and dataset of WWW2020 Paper **Selective Weak Supervision for Neural Information Retrieval**. [Paper (coming soon)]()
+Code and dataset of WWW2020 Paper **Selective Weak Supervision for Neural Information Retrieval**. [Paper](https://arxiv.org/pdf/2001.10382.pdf)
 
 ![ReInfoSelect](ReInfoSelect.png)
 
