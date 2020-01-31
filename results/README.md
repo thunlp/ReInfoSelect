@@ -1,4 +1,6 @@
 # Results
+All results are located in this `/results` folder.
+
 |Method|ClueWeb09 NDCG@20|ClueWeb09 ERR@20|Robust04 NDCG@20|Robust04 ERR@20|ClueWeb12 NDCG@20|ClueWeb12 ERR@20|
 |:----:|:---------------:|:--------------:|:--------------:|:-------------:|:---------------:|:--------------:|
 |**Conv-KNRM**|||||

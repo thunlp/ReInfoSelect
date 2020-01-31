@@ -4,7 +4,10 @@ Code and dataset of WWW2020 Paper **Selective Weak Supervision for Neural Inform
 ![ReInfoSelect](ReInfoSelect.png)
 
 ## Datasets
-Coming soon.
+Coming soon!
+
+## Get Started
+Coming soon!
 
 ## References
 - [End-to-end neural ad-hoc ranking with kernel pooling](http://www.cs.cmu.edu/afs/cs/user/cx/www/papers/K-NRM.pdf) (K-NRM)

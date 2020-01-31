@@ -1,9 +1,7 @@
 # Data Preparation
-
 All data are located in this `/data` folder.
 
 # Data Format
-
 ```shell
 # Train
 query \t doc_pos \t doc_neg
