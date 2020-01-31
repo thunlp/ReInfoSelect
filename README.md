@@ -3,35 +3,6 @@ Code and dataset of WWW2020 Paper **Selective Weak Supervision for Neural Inform
 
 ![ReInfoSelect](ReInfoSelect.png)
 
-## Results
-|Method|ClueWeb09 NDCG@20|ClueWeb09 ERR@20|Robust04 NDCG@20|Robust04 ERR@20|ClueWeb12 NDCG@20|ClueWeb12 ERR@20|
-|:----:|:---------------:|:--------------:|:--------------:|:-------------:|:---------------:|:--------------:|
-|**Conv-KNRM**|||||
-|No Weak Supervision|0.2873|0.1597|0.4267|0.1168|0.1123|0.0915|
-|Anchor+BM25 Labels|0.2910|0.1585|0.4322|0.1179|0.1181|0.0978|
-|Title Discriminator|0.2927|0.1606|0.4318|0.1193|0.1176|0.0975|
-|All Anchor|0.2839|0.1464|0.4305|0.1190|0.1119|0.0906|
-|MS MARCO Human Label|0.2903|0.1542|0.4337|0.1194|0.1183|0.0981|
-|ReInfoSelect|0.3096|0.1611|0.4423|0.1202|0.1225|0.1044|
-|ReInfoSelect (ensemble)|0.3244|0.1778|0.4503|0.1227|0.1279|0.1042|
-|**BERT**|||||||
-|No Weak Supervision|0.2999|0.1631|0.4258|0.1163|0.1190|0.0963|
-|Anchor+BM25 Labels|0.3068|0.1618|0.4375|0.1233|0.1160|0.0990|
-|Title Discriminator|0.3021|0.1513|0.4379|0.1202|0.1162|0.0981|
-|All Anchor|0.3072|0.1609|0.4446|0.1206|0.1208|0.0965|
-|MS MARCO Human Label|0.3085|0.1652|0.4415|0.1213|0.1207|0.1024|
-|ReInfoSelect|0.3261|0.1669|0.4500|0.1220|0.1276|0.0997|
-|ReInfoSelect (ensemble)|0.3391|0.1815|0.4613|0.1287|0.1302|0.1038|
-|**EDRM**|||||
-|No Weak Supervision|0.2922|0.1642|0.4263|0.1158|0.1119|0.0910|
-|Anchor+BM25 Labels|0.2989|0.1650|0.4341|0.1179|0.1172|0.0947|
-|Title Discriminator|0.2983|0.1642|0.4315|0.1167|0.1176|0.0950|
-|All Anchor|0.3012|0.1715|0.4311|0.1175|0.1167|0.0958|
-|ReInfoSelect|0.3163|0.1794|0.4396|0.1208|0.1215|0.0980|
-|**TK**|||||
-|No Weak Supervision|0.3003|0.1577|0.4273|0.1163|0.1192|0.0991|
-|ReInfoSelect|0.3103|0.1626|0.4320|0.1183|0.1297|0.1043|
-
 ## Datasets
 Coming soon.
 
