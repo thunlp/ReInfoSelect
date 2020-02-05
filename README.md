@@ -4,7 +4,9 @@ Code and dataset of WWW2020 Paper **Selective Weak Supervision for Neural Inform
 ![ReInfoSelect](ReInfoSelect.png)
 
 ## Datasets
-Coming soon!
+Data can be downloaded from [link](https://cloud.tsinghua.edu.cn/d/77741ef1c1704866814a/)
+
+Datasets include queries, qrels and SDM rankings (.trec) for ClueWeb09-B, Robust04 and ClueWeb12-B13. We also release the weak supervision relation, all anchor and 100K anchor files. However, We cannot release the document contents.
 
 ## Get Started
 Coming soon!
