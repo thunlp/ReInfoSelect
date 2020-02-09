@@ -3,7 +3,25 @@ import torch.nn as nn
 from torch.autograd import Variable
 import torch.nn.functional as F
 
-from model_utils import kernal_mus, kernel_sigmas
+def kernal_mus(n_kernels):
+    l_mu = [1]
+    if n_kernels == 1:
+        return l_mu
+
+    bin_size = 2.0 / (n_kernels - 1)  # score range from [-1, 1]
+    l_mu.append(1 - bin_size / 2)  # mu: middle of the bin
+    for i in range(1, n_kernels - 1):
+        l_mu.append(l_mu[i] - bin_size)
+    return l_mu
+
+def kernel_sigmas(n_kernels):
+    bin_size = 2.0 / (n_kernels - 1)
+    l_sigma = [0.001]  # for exact match. small variance -> exact match
+    if n_kernels == 1:
+        return l_sigma
+
+    l_sigma += [0.1] * (n_kernels - 1)
+    return l_sigma
 
 class cknrm(nn.Module):
     def __init__(self, args, embedding_init=None):
@@ -17,7 +35,7 @@ class cknrm(nn.Module):
         self.mu = Variable(tensor_mu, requires_grad=False).view(1, 1, 1, args.n_kernels)
         self.sigma = Variable(tensor_sigma, requires_grad=False).view(1, 1, 1, args.n_kernels)
         
-        self.embedding = nn.Embedding(args.vocab_size, argsembed_dim)
+        self.embedding = nn.Embedding(args.vocab_size, args.embed_dim)
         if embedding_init is not None:
             em = torch.tensor(embedding_init, dtype=torch.float32)
             self.embedding.weight = nn.Parameter(em)
@@ -33,12 +51,13 @@ class cknrm(nn.Module):
             nn.ReLU()
         )
         self.conv_tri = nn.Sequential(
-            nn.Conv2d(1, 128, (3, args.embedding_dim)),
+            nn.Conv2d(1, 128, (3, args.embed_dim)),
             nn.ReLU()
         )
 
-        feature_dim = args.n_kernel * 9 + 1
+        feature_dim = args.n_kernels * 9
         self.dense = nn.Linear(feature_dim, 1)
+        self.dense_p = nn.Linear(feature_dim + 1, 1)
 
     def get_intersect_matrix(self, q_embed, d_embed, atten_q, atten_d):
         sim = torch.bmm(q_embed, d_embed).view(q_embed.size()[0], q_embed.size()[1], d_embed.size()[2], 1)
@@ -48,7 +67,20 @@ class cknrm(nn.Module):
         log_pooling_sum = torch.sum(log_pooling_sum, 1)
         return log_pooling_sum
 
-    def forward(self, qw_embed, dw_embed, inputs_qwm, inputs_dwm, score_feature=None):
+    def create_mask_like(self, lengths, like):
+        mask = torch.zeros(like.size()[:2])
+        for ind, _length in enumerate(lengths.data):
+            mask[ind, :_length] = 1
+        mask = mask.type_as(like.data)
+        mask = torch.autograd.Variable(mask, requires_grad=False)
+        return mask
+
+    def forward(self, query_idx, doc_idx, query_len, doc_len, raw_score=None):
+        qw_embed = self.embedding(query_idx)
+        dw_embed = self.embedding(doc_idx)
+        inputs_qwm = self.create_mask_like(query_len, qw_embed)
+        inputs_dwm = self.create_mask_like(doc_len, dw_embed)
+
         qwu_embed = torch.transpose(torch.squeeze(self.conv_uni(qw_embed.view(qw_embed.size()[0], 1, -1, self.d_word_vec)), dim=3), 1, 2) + 0.000000001
         qwb_embed = torch.transpose(torch.squeeze(self.conv_bi (qw_embed.view(qw_embed.size()[0], 1, -1, self.d_word_vec)), dim=3), 1, 2) + 0.000000001
         qwt_embed = torch.transpose(torch.squeeze(self.conv_tri(qw_embed.view(qw_embed.size()[0], 1, -1, self.d_word_vec)), dim=3), 1, 2) + 0.000000001
@@ -81,7 +113,9 @@ class cknrm(nn.Module):
         
         log_pooling_sum = torch.cat([ log_pooling_sum_wwuu, log_pooling_sum_wwut, log_pooling_sum_wwub, log_pooling_sum_wwbu, log_pooling_sum_wwtu,\
             log_pooling_sum_wwbb, log_pooling_sum_wwbt, log_pooling_sum_wwtb, log_pooling_sum_wwtt], 1)
-        if score_feature is not None:
-            log_pooling_sum = torch.cat([log_pooling_sum, score_feature.unsqueeze(1)], 1)
-        score = self.dense(log_pooling_sum).squeeze(-1)
+        if raw_score is not None:
+            log_pooling_sum = torch.cat([log_pooling_sum, raw_score.unsqueeze(1)], 1)
+            score = self.dense_p(log_pooling_sum).squeeze(-1)
+        else:
+            score = self.dense(log_pooling_sum).squeeze(-1)
         return score, log_pooling_sum

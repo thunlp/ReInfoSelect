@@ -1,4 +1,3 @@
-import yaml
 import argparse
 
 import numpy as np
@@ -42,7 +41,7 @@ def dev(args, model, dev_data, device):
     measure = [m_ndcg, m_err]
     return measure
 
-def train(args, policy, p_optim, model, m_optim, crit, word2vec, tokenizer, dev_data, device):
+def train(args, policy, p_optim, model, m_optim, crit, word2vec, dev_data, device):
     best_ndcg = 0.0
     for i_episode in range(args.epoch):
         # train data
@@ -102,7 +101,7 @@ def train(args, policy, p_optim, model, m_optim, crit, word2vec, tokenizer, dev_
                 policy_loss = []
                 returns = []
                 for ri in reversed(range(len(rewards))):
-                    R = rewards[ri] + gamma_raw * R
+                    R = rewards[ri] + args.gamma * R
                     if R > 0:
                         log_probs.insert(0, log_prob_ps[ri])
                         returns.insert(0, R)
@@ -134,6 +133,7 @@ def main():
     parser.add_argument('-warmup', default='./model.bin')
     parser.add_argument('-res', default='./out.trec')
     parser.add_argument('-depth', default=20)
+    parser.add_argument('-gamma', default=0.99)
     parser.add_argument('-T', default=4)
     parser.add_argument('-n_kernels', default=21)
     parser.add_argument('-max_seq_len', default=128)
@@ -160,8 +160,8 @@ def main():
     model.to(device)
 
     # init optimizer and load dev_data
-        m_optim = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=0.001)
-        dev_data = dev_dataloader(args, word2vec)
+    m_optim = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=0.001)
+    dev_data = dev_dataloader(args, word2vec)
 
     # load trained model
     if args.warmup:
@@ -177,7 +177,7 @@ def main():
         model = nn.DataParallel(model)
         crit = nn.DataParallel(crit)
 
-    train(args, policy, p_optim, model, m_optim, crit, dev_data, device)
+    train(args, policy, p_optim, model, m_optim, crit, word2vec, dev_data, device)
 
 if __name__ == "__main__":
     main()

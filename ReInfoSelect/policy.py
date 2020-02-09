@@ -3,7 +3,7 @@ from torch import nn, optim
 from torch.autograd import Variable
 import torch.nn.functional as F
 
-import texar as tx
+import texar.torch as tx
 
 def kernal_mus(n_kernels):
     l_mu = [1]

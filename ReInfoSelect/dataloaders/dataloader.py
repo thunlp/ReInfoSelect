@@ -111,7 +111,7 @@ def read_dev_to_features(args, word2idx):
             qd_score = int(s[2])
             query_id = s[3]
             doc_id = s[4]
-            score_feature = float(s[5])
+            raw_score = float(s[5])
 
             query_toks = stopword_removal(query_toks)
             doc_toks = stopword_removal(doc_toks)
@@ -137,14 +137,14 @@ def read_dev_to_features(args, word2idx):
                 query_id = query_id,
                 doc_id = doc_id,
                 qd_score = qd_score,
-                score_feature = score_feature,
+                raw_score = raw_score,
                 query_idx = query_idx,
                 doc_idx = doc_idx,
                 query_len = query_len,
                 doc_len = doc_len))
         return features
 
-def train_dataloader(args, tokenizer, shuffle=False):
+def train_dataloader(args, tokenizer, shuffle=True):
     features = read_train_to_features(args, tokenizer)
     n_samples = len(features)
     idx = np.arange(n_samples)
@@ -180,7 +180,7 @@ def dev_dataloader(args, tokenizer):
         query_id = [features[i].query_id for i in batch_idx]
         doc_id = [features[i].doc_id for i in batch_idx]
         qd_score = [features[i].qd_score for i in batch_idx]
-        score_feature = torch.tensor([features[i].raw_score for i in batch_idx], dtype=torch.float)
+        raw_score = torch.tensor([features[i].raw_score for i in batch_idx], dtype=torch.float)
         query_idx = [torch.tensor(features[i].query_idx, dtype=torch.long) for i in batch_idx]
         doc_idx = [torch.tensor(features[i].doc_idx, dtype=torch.long) for i in batch_idx]
         query_len = torch.tensor([features[i].query_len for i in batch_idx], dtype=torch.long)
@@ -189,6 +189,6 @@ def dev_dataloader(args, tokenizer):
         query_idx = nn.utils.rnn.pad_sequence(query_idx, batch_first=True)
         doc_idx = nn.utils.rnn.pad_sequence(doc_idx, batch_first=True)
 
-        batch = (query_id, doc_id, qd_score, score_feature, query_idx, doc_idx, query_len, doc_len)
+        batch = (query_id, doc_id, qd_score, raw_score, query_idx, doc_idx, query_len, doc_len)
         batches.append(batch)
     return batches

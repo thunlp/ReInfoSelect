@@ -8,8 +8,23 @@ Data can be downloaded from [link](https://cloud.tsinghua.edu.cn/d/77741ef1c1704
 
 Datasets include queries, qrels and SDM rankings (.trec) for ClueWeb09-B, Robust04 and ClueWeb12-B13. We also release the weak supervision relation, all anchor and 100K anchor files. However, We cannot release the document contents.
 
+## Requirements
+This repository has been tested with `Python 3.7` and `pytorch 1.4.0`.
+
+Other requirements include `texar_pytorch 0.1.1`, `allennlp 0.9.0`, `transformers 2.4.1`, `krovetzstemmer 0.6`, `nltk 3.4.5` and `pytrec_eval 0.4`.
+
 ## Get Started
-Coming soon!
+First, please prepare the needed data in recommended format.
+
+For kernel-based neural ranking models,
+```
+python train_kernel.py
+```
+
+and for BERT,
+```
+python train_bert.py
+```
 
 ## References
 - [End-to-end neural ad-hoc ranking with kernel pooling](http://www.cs.cmu.edu/afs/cs/user/cx/www/papers/K-NRM.pdf) (K-NRM)

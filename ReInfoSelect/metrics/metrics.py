@@ -1,3 +1,4 @@
+import os
 import pytrec_eval
 
 def ndcg(qrels, trec, k):
@@ -26,10 +27,12 @@ def ndcg(qrels, trec, k):
 
 def err(qrels, trec, k):
     res = os.popen('./gdeval.pl -k %d %s %s' % (k, qrels, trec))
+    score = ''
     for r in res:
-        pass
-    scores = r.strip('\n').split(',')
+        score = r
+    score = score.strip('\n').split(',')
     #ndcg = float(scores[2])
-    err = float(scores[3])
+    print(score)
+    err = float(score[3])
 
     return err
