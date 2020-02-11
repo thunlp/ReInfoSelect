@@ -45,7 +45,7 @@ pip install -r requirements.txt
 ## Get Started
 First, please prepare your data in recommended [format](./data).
 ```
-python ./data/preprocess.py`.
+python ./data/preprocess.py
 ```
 
 For Conv-KNRM,
