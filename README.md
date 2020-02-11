@@ -23,27 +23,27 @@ More results are available in [results](./results).
 ## Datasets
 Data can be downloaded from [Datasets](https://cloud.tsinghua.edu.cn/d/77741ef1c1704866814a/).
 
-|Datasets|Queries/Anchors|Query/Anchor-Doc Pairs|
-|:-------|:-------------:|:-------------:|
-|**Weak Supervision**|100K|6.75M|
-|**ClueWeb09-B**|200|47.1K|
-|**Robust04**|249|311K|
-|**ClueWeb12-B13**|100|28.9K|
+|Datasets|Queries/Anchors|Query/Anchor-Doc Pairs|Released Files|
+|:-------|:-------------:|:--------------------:|:-------------|
+|**Weak Supervision**|100K|6.75M|All Anchors, Used 100K Anchors, A-D\_pos, A-D\_neg (BM25)|
+|**ClueWeb09-B**|200|47.1K|Queries, Q-D Relations, SDM scores|
+|**Robust04**|249|311K|Queries, Q-D Relations, SDM scores|
+|**ClueWeb12-B13**|100|28.9K|Queries, Q-D Relations, SDM scores|
 
-Datasets include Queries, qrels and SDM rankings (.trec) for ClueWeb09-B, Robust04 and ClueWeb12-B13. We also release the weak supervision relation, all anchor and 100K anchor files. However, We cannot release the document contents.
+As we cannot release the document contents, the document IDs are used instead.
 
 ## Requirements
 
 * `python == 3.6` or `3.7`
 * `torch >= 1.0.0`.
 
-To use ReInfoSelect, please install all requirements with the following command:
+To run ReInfoSelect, please install all requirements.
 ```
 pip install -r requirements.txt
 ```
 
 ## Get Started
-First, please prepare your data in recommended [format](./data) using:
+First, please prepare your data in recommended [format](./data).
 ```
 python ./data/preprocess.py`.
 ```
