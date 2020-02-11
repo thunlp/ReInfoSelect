@@ -1,7 +1,11 @@
 # ReInfoSelect
 Codes and datasets of WWW2020 Paper **Selective Weak Supervision for Neural Information Retrieval**. [Paper](https://arxiv.org/pdf/2001.10382.pdf)
 
-![ReInfoSelect](ReInfoSelect.png)
+## Framework
+
+![ReInfoSelect](./framework/ReInfoSelect.png)
+
+## Results
 
 |Model|Method|ClueWeb09 NDCG@20|ClueWeb09 ERR@20|Robust04 NDCG@20|Robust04 ERR@20|ClueWeb12 NDCG@20|ClueWeb12 ERR@20|
 |:----|:----:|:---------------:|:--------------:|:--------------:|:-------------:|:---------------:|:--------------:|
