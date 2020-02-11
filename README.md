@@ -23,7 +23,7 @@ More results are available in [results](./results).
 ## Datasets
 Data can be downloaded from [Datasets](https://cloud.tsinghua.edu.cn/d/77741ef1c1704866814a/).
 
-|Datasets|Queries/Anchors|Query/anchor-Doc Pairs|
+|Datasets|Queries/Anchors|Query/Anchor-Doc Pairs|
 |:-------|:-------------:|:-------------:|
 |**Weak Supervision**|100K|6.75M|
 |**ClueWeb09-B**|200|47.1K|
