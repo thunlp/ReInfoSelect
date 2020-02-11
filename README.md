@@ -30,24 +30,32 @@ Data can be downloaded from [Datasets](https://cloud.tsinghua.edu.cn/d/77741ef1c
 |**Robust04**|249|311K|
 |**ClueWeb12-B13**|100|28.9K|
 
+Datasets include Queries, qrels and SDM rankings (.trec) for ClueWeb09-B, Robust04 and ClueWeb12-B13. We also release the weak supervision relation, all anchor and 100K anchor files. However, We cannot release the document contents.
+
 ## Requirements
 
 * `python == 3.6` or `3.7`
 * `torch >= 1.0.0`.
 
-Other requirements include `texar_pytorch 0.1.1`, `allennlp 0.9.0`, `transformers 2.4.1`, `krovetzstemmer 0.6`, `nltk 3.4.5` and `pytrec_eval 0.4`.
+To use ReInfoSelect, please install all requirements with the following command:
+```
+pip install -r requirements.txt
+```
 
 ## Get Started
-First, please prepare the needed data in recommended format.
-
-For kernel-based neural ranking models,
+First, please prepare your data in recommended [format](./data) using:
 ```
-python train_kernel.py
+python ./data/preprocess.py`.
+```
+
+For Conv-KNRM,
+```
+bash ./ReInfoSelect/train_cknrm.sh
 ```
 
 and for BERT,
 ```
-python train_bert.py
+bash ./ReInfoSelect/train_bert.sh
 ```
 
 ## Citation

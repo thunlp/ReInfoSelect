@@ -8,7 +8,7 @@ import torch.nn.functional as F
 
 from policy import all_policy
 from dataloaders import *
-from models import *
+from models import BertForRanking
 from metrics import *
 
 def dev(args, model, dev_data, device):
@@ -139,7 +139,7 @@ def main():
     parser.add_argument('-n_kernels', default=21)
     parser.add_argument('-max_seq_len', default=128)
     parser.add_argument('-epoch', default=1)
-    parser.add_argument('-batch_size', default=32)
+    parser.add_argument('-batch_size', default=4)
     args = parser.parse_args()
 
     # init embedding

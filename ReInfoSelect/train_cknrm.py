@@ -8,7 +8,7 @@ import torch.nn.functional as F
 
 from policy import all_policy
 from dataloaders import *
-from models import *
+from models import cknrm
 from metrics import *
 
 def dev(args, model, dev_data, device):
@@ -34,7 +34,7 @@ def dev(args, model, dev_data, device):
         for q_id, scores in rst_dict.items():
             res = sorted(scores, key=lambda x: x[1], reverse=True)
             for rank, value in enumerate(res):
-                writer.write(q_id+' '+'Q0'+' '+str(value[2])+' '+str(rank+1)+' '+str(value[1])+' '+args.model+'\n')
+                writer.write(q_id+' '+'Q0'+' '+str(value[2])+' '+str(rank+1)+' '+str(value[1])+' Conv-KNRM\n')
 
     m_ndcg = ndcg(args.qrels, args.res, args.depth)
     m_err = err(args.qrels, args.res, args.depth)
@@ -123,7 +123,6 @@ def train(args, policy, p_optim, model, m_optim, crit, word2vec, dev_data, devic
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-task', choices=['ClueWeb09', 'Robust04', 'ClueWeb12'], default='ClueWeb09')
-    parser.add_argument('-model', choices=['knrm', 'cknrm', 'tk', 'edrm'], default='cknrm')
     parser.add_argument('-train', default='./data/anchdoc/anchdoc.tsv')
     parser.add_argument('-dev', default='./data/ClueWeb09/dev.tsv')
     parser.add_argument('-qrels', default='./data/ClueWeb09/qrels')
@@ -151,12 +150,7 @@ def main():
     p_optim = torch.optim.Adam(filter(lambda p: p.requires_grad, policy.parameters()), lr=0.001)
 
     # init model
-    if args.model == 'knrm':
-        model = knrm(args, embedding_init)
-    elif args.model == 'cknrm':
-        model = cknrm(args, embedding_init)
-    elif args.model == 'tk':
-        model = tk(args, embedding_init)
+    model = cknrm(args, embedding_init)
     model.to(device)
 
     # init optimizer and load dev_data
@@ -164,9 +158,9 @@ def main():
     dev_data = dev_dataloader(args, word2vec)
 
     # load trained model
-    if args.warmup:
-        state_dict=torch.load(args.warmup)
-        model.load_state_dict(state_dict)
+    #if args.warmup:
+    #    state_dict=torch.load(args.warmup)
+    #    model.load_state_dict(state_dict)
 
     # loss function
     crit = nn.MarginRankingLoss(margin=1, size_average=True)

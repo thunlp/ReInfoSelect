@@ -1,0 +1,4 @@
+transformers
+krovetzstemmer
+nltk
+pytrec_eval

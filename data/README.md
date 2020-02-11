@@ -7,5 +7,5 @@ All data are located in this `/data` folder.
 query \t doc_pos \t doc_neg
 
 # Dev
-query \t doc \t label \t query_id \t doc_id \t score (learning to rank)
+query \t doc \t label \t query_id \t doc_id \t score (SDM)
 ```
