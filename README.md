@@ -5,14 +5,14 @@ Codes and datasets of WWW2020 Paper **Selective Weak Supervision for Neural Info
 
 |Model|Method|ClueWeb09 NDCG@20|ClueWeb09 ERR@20|Robust04 NDCG@20|Robust04 ERR@20|ClueWeb12 NDCG@20|ClueWeb12 ERR@20|
 |:----|:----:|:---------------:|:--------------:|:--------------:|:-------------:|:---------------:|:--------------:|
-|**Conv-KNRM**|No Weak Supervision|0.2873|0.1597|0.4267|0.1168|0.1123|0.0915|
-||ReInfoSelect|0.3096|0.1611|0.4423|0.1202|0.1225|**0.1044**|
-|**TK**|No Weak Supervision|0.3003|0.1577|0.4273|0.1163|0.1192|0.0991|
-||ReInfoSelect|0.3103|0.1626|0.4320|0.1183|**0.1297**|0.1043|
-|**EDRM**|No Weak Supervision|0.2922|0.1642|0.4263|0.1158|0.1119|0.0910|
-||ReInfoSelect|0.3163|**0.1794**|0.4396|0.1208|0.1215|0.0980|
-|**BERT**|No Weak Supervision|0.2999|0.1631|0.4258|0.1163|0.1190|0.0963|
-||ReInfoSelect|**0.3261**|0.1669|**0.4500**|**0.1220**|0.1276|0.0997|
+|**Conv-KNRM**|**No Weak Supervision**|0.2873|0.1597|0.4267|0.1168|0.1123|0.0915|
+||**ReInfoSelect**|0.3096|0.1611|0.4423|0.1202|0.1225|***0.1044***|
+|**TK**|**No Weak Supervision**|0.3003|0.1577|0.4273|0.1163|0.1192|0.0991|
+||**ReInfoSelect**|0.3103|0.1626|0.4320|0.1183|***0.1297***|0.1043|
+|**EDRM**|**No Weak Supervision**|0.2922|0.1642|0.4263|0.1158|0.1119|0.0910|
+||**ReInfoSelect**|0.3163|***0.1794***|0.4396|0.1208|0.1215|0.0980|
+|**BERT**|**No Weak Supervision**|0.2999|0.1631|0.4258|0.1163|0.1190|0.0963|
+||**ReInfoSelect**|***0.3261***|0.1669|***0.4500***|***0.1220***|0.1276|0.0997|
 
 More results are available in [results](./results).
 
@@ -27,7 +27,6 @@ Data can be downloaded from [Datasets](https://cloud.tsinghua.edu.cn/d/77741ef1c
 |**ClueWeb12-B13**|100|28.9K|
 
 ## Requirements
-**ReInfoSelect** requires:
 
 * `python == 3.6` or `3.7`
 * `torch >= 1.0.0`.
