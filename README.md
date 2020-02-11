@@ -25,7 +25,7 @@ Data can be downloaded from [Datasets](https://cloud.tsinghua.edu.cn/d/77741ef1c
 
 |Datasets|Queries/Anchors|Query/Anchor-Doc Pairs|Released Files|
 |:-------|:-------------:|:--------------------:|:-------------|
-|**Weak Supervision**|100K|6.75M|All Anchors, Used 100K Anchors, A-D\_pos, A-D\_neg (BM25)|
+|**Weak Supervision**|100K|6.75M|Anchors, A-D Relations|
 |**ClueWeb09-B**|200|47.1K|Queries, Q-D Relations, SDM scores|
 |**Robust04**|249|311K|Queries, Q-D Relations, SDM scores|
 |**ClueWeb12-B13**|100|28.9K|Queries, Q-D Relations, SDM scores|
