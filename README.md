@@ -59,6 +59,9 @@ bash ./ReInfoSelect/train_bert.sh
 ```
 
 Finally, concatenate the neural features with SDM score and run Coor-Ascent using [RankLib](https://sourceforge.net/p/lemur/wiki/RankLib/).
+```
+java -jar RankLib-2.1-patched.jar -train results/bert_out.trec -ranker 4 -kcv 5 -kcvmd results/ -kcvmn ca -metric2t ndcg@20
+```
 
 ## Citation
 Please cite our paper if you find it helpful.
