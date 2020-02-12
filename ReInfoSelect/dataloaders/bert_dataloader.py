@@ -17,7 +17,7 @@ class trainFeatures(object):
         self.n_segment_ids = n_segment_ids
 
 class devFeatures(object):
-    def __init__(self, query_id, doc_id, qd_score, raw_score, query_idx, doc_idx, query_len, doc_len, d_input_ids, d_input_mask, d_segment_ids):
+    def __init__(self, query_id, doc_id, qd_score, raw_score, d_input_ids, d_input_mask, d_segment_ids):
         self.query_id = query_id
         self.doc_id = doc_id
         self.qd_score = qd_score
@@ -192,7 +192,7 @@ def bert_train_dataloader(args, word2idx, tokenizer, shuffle=True):
         n_segment_ids = torch.tensor([features[i].n_segment_ids for i in batch_idx], dtype=torch.long)
 
         query_idx = nn.utils.rnn.pad_sequence(query_idx, batch_first=True)
-        doc_idx = nn.utils.rnn.pad_sequence(pos_idx, batch_first=True)
+        doc_idx = nn.utils.rnn.pad_sequence(doc_idx, batch_first=True)
 
         batch = (query_idx, doc_idx, query_len, doc_len, p_input_ids, p_input_mask, p_segment_ids, n_input_ids, n_input_mask, n_segment_ids)
         batches.append(batch)
