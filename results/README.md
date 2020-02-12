@@ -1,5 +1,5 @@
 # Results
-All Results of ReInfoSelect.
+All Results.
 
 ## Conv-KNRM:
 
