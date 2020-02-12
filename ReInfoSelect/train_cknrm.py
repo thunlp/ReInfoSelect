@@ -63,28 +63,18 @@ def train(args, policy, p_optim, model, m_optim, crit, word2vec, dev_data, devic
             probs = policy(query_idx, pos_idx, query_len, pos_len)
             dist  = Categorical(probs)
             action = dist.sample()
-            if action.sum().item() < 1:
-                continue
+            weights = Variable(action, requires_grad=False).cuda()
+            log_prob_p = dist.log_prob(action)
+            log_prob_n = dist.log_prob(1-action)
 
-            filt = torch.nonzero(action.squeeze(-1)).squeeze(-1)
-            probs = torch.index_select(probs, 0, filt)
-            log_prob_p = torch.log(probs[:, 1])
-            log_prob_n = torch.log(probs[:, 0])
-
-            query_idx_f = torch.index_select(query_idx, 0, filt)
-            pos_idx_f = torch.index_select(pos_idx, 0, filt)
-            neg_idx_f = torch.index_select(neg_idx, 0, filt)
-            query_len_f = torch.index_select(query_len, 0, filt)
-            pos_len_f = torch.index_select(pos_len, 0, filt)
-            neg_len_f = torch.index_select(neg_len, 0, filt)
-
-            p_scores = model(query_idx_f, pos_idx_f, query_len_f, pos_len_f)
-            n_scores = model(query_idx_f, neg_idx_f, query_len_f, neg_len_f)
+            m_optim.zero_grad()
+            p_scores, _ = model(query_idx, pos_idx, query_len, pos_len)
+            n_scores, _ = model(query_idx, neg_idx, query_len, neg_len)
             label = torch.ones(p_scores.size()).to(device)
             batch_loss = crit(p_scores, n_scores, Variable(label, requires_grad=False))
+            batch_loss = batch_loss.mul(weights).mean()
             batch_loss.backward()
             m_optim.step()
-            m_optim.zero_grad()
 
             log_prob_ps.append(log_prob_p)
             log_prob_ns.append(log_prob_n)
@@ -123,14 +113,13 @@ def train(args, policy, p_optim, model, m_optim, crit, word2vec, dev_data, devic
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-task', choices=['ClueWeb09', 'Robust04', 'ClueWeb12'], default='ClueWeb09')
-    parser.add_argument('-train', default='./data/anchdoc/anchdoc.tsv')
+    parser.add_argument('-train', default='./data/weak_supervision.tsv')
     parser.add_argument('-dev', default='./data/ClueWeb09/dev.tsv')
     parser.add_argument('-qrels', default='./data/ClueWeb09/qrels')
     parser.add_argument('-embed', default='./data/glove.6B.300d.txt')
     parser.add_argument('-vocab_size', default=400002)
     parser.add_argument('-embed_dim', default=300)
-    parser.add_argument('-warmup', default='./model.bin')
-    parser.add_argument('-res', default='./out.trec')
+    parser.add_argument('-res', default='./results/cknrm_out.trec')
     parser.add_argument('-depth', default=20)
     parser.add_argument('-gamma', default=0.99)
     parser.add_argument('-T', default=4)
@@ -156,11 +145,6 @@ def main():
     # init optimizer and load dev_data
     m_optim = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=0.001)
     dev_data = dev_dataloader(args, word2vec)
-
-    # load trained model
-    #if args.warmup:
-    #    state_dict=torch.load(args.warmup)
-    #    model.load_state_dict(state_dict)
 
     # loss function
     crit = nn.MarginRankingLoss(margin=1, size_average=True)
