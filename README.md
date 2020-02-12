@@ -58,7 +58,7 @@ and for BERT,
 bash ./ReInfoSelect/train_bert.sh
 ```
 
-After ReInfoSelect training, please concatenate the neural features with SDM score. Then feed all features into Coor-Ascent using [RankLib](https://sourceforge.net/p/lemur/wiki/RankLib/).
+Finally, concatenate the neural features with SDM score and run Coor-Ascent using [RankLib](https://sourceforge.net/p/lemur/wiki/RankLib/).
 
 ## Citation
 Please cite our paper if you find it helpful.
