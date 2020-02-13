@@ -3,7 +3,7 @@ Codes and datasets of WWW2020 Paper **Selective Weak Supervision for Neural Info
 
 ## Framework
 
-![ReInfoSelect](./framework/ReInfoSelect.png)
+![ReInfoSelect](./ReInfoSelect.png)
 
 ## Results
 
@@ -35,7 +35,7 @@ As we cannot release the document contents, the document IDs are used instead.
 ## Requirements
 
 * `python == 3.6` or `3.7`
-* `torch >= 1.0.0`.
+* `torch >= 1.0.0`
 
 To run ReInfoSelect, please install all requirements.
 ```
@@ -70,7 +70,8 @@ Please cite our paper if you find it helpful.
 @inproceedings{zhang2020selective,
     title = {Selective Weak Supervision for Neural Information Retrieval},
     author = {Kaitao Zhang and Chenyan Xiong and Zhenghao Liu and Zhiyuan Liu},
-    booktitle = {Proceedings of WWW},
+    journal = {CoRR},
+    volume = {abs/2001.10382},
     year = {2020}
 }
 ```
