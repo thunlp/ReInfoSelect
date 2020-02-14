@@ -65,7 +65,7 @@ def train(args, policy, p_optim, model, m_optim, crit, word2vec, dev_data, devic
             action = dist.sample()
             weights = Variable(action, requires_grad=False).cuda()
             log_prob_p = dist.log_prob(action)
-            log_prob_n = dist.log_prob(1-action)
+            log_prob_n = dist.log_prob(torch.zeros_like(action))
 
             m_optim.zero_grad()
             p_scores, _ = model(query_idx, pos_idx, query_len, pos_len)
