@@ -67,7 +67,7 @@ def train(args, policy, p_optim, model, m_optim, crit, word2vec, tokenizer, dev_
             action = dist.sample()
             weights = Variable(action, requires_grad=False).cuda()
             log_prob_p = dist.log_prob(action)
-            log_prob_n = dist.log_prob(1-action)
+            log_prob_n = dist.log_prob(torch.zeros(action.size()).type_as(action))
 
             m_optim.zero_grad()
             p_scores, _ = model(p_input_ids, p_segment_ids, p_input_mask)
@@ -140,7 +140,7 @@ def main():
     # init policy
     policy = all_policy(args, embedding_init)
     policy.to(device)
-    p_optim = torch.optim.Adam(filter(lambda p: p.requires_grad, policy.parameters()), lr=0.001)
+    p_optim = torch.optim.Adam(filter(lambda p: p.requires_grad, policy.parameters()), lr=1e-4)
 
     # init model
     model = BertForRanking()
