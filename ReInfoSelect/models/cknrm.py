@@ -115,7 +115,7 @@ class cknrm(nn.Module):
             log_pooling_sum_wwbb, log_pooling_sum_wwbt, log_pooling_sum_wwtb, log_pooling_sum_wwtt], 1)
         if raw_score is not None:
             log_pooling_sum = torch.cat([log_pooling_sum, raw_score.unsqueeze(1)], 1)
-            score = self.dense_p(log_pooling_sum).squeeze(-1)
+            score = self.tanh(self.dense_p(log_pooling_sum)).squeeze(-1)
         else:
-            score = self.dense(log_pooling_sum).squeeze(-1)
+            score = self.tanh(self.dense(log_pooling_sum)).squeeze(-1)
         return score, log_pooling_sum

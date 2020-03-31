@@ -7,6 +7,7 @@ class BertForRanking(nn.Module):
         model = model_class.from_pretrained('bert-base-uncased')
 
         feature_dim = 768
+        self.tanh = nn.Tanh()
         self.dense = nn.Linear(feature_dim, 1)
         self.dense_p = nn.Linear(feature_dim + 1, 1)
 
@@ -14,7 +15,7 @@ class BertForRanking(nn.Module):
         output = self.bert(inst, token_type_ids=tok, attention_mask=mask)
         if score_feature is not None:
             logits = torch.cat([output[1], raw_score.unsqueeze(1)], 1)
-            score = self.dense_p(output[1]).squeeze(-1)
+            score = self.tanh(self.dense_p(output[1])).squeeze(-1)
         else:
-            score = self.dense(output[1]).squeeze(-1)
+            score = self.tanh(self.dense(output[1])).squeeze(-1)
         return score, output[1]
