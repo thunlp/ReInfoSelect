@@ -21,7 +21,7 @@ def dev(args, model, dev_data, device):
         (score_feature, query_idx, doc_idx, query_len, doc_len) = batch
 
         with torch.no_grad():
-            doc_scores = model(query_idx, doc_idx, query_len, doc_len, score_feature)
+            doc_scores, _ = model(query_idx, doc_idx, query_len, doc_len, score_feature)
         d_scores = doc_scores.detach().cpu().tolist()
 
         for (q_id, d_id, qd_s, d_s) in zip(query_id, doc_id, qd_score, d_scores):
