@@ -50,12 +50,12 @@ python ./data/preprocess.py
 
 For Conv-KNRM,
 ```
-bash ./ReInfoSelect/train_cknrm.sh
+bash ./train_cknrm.sh
 ```
 
 and for BERT,
 ```
-bash ./ReInfoSelect/train_bert.sh
+bash ./train_bert.sh
 ```
 
 Finally, concatenate the neural features with SDM score and run Coor-Ascent using [RankLib](https://sourceforge.net/p/lemur/wiki/RankLib/).

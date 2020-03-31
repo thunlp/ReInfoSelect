@@ -136,7 +136,7 @@ def main():
 
     policy = all_policy(args, embedding_init)
     policy.to(device)
-    p_optim = torch.optim.Adam(filter(lambda p: p.requires_grad, policy.parameters()), lr=1e-4)
+    p_optim = torch.optim.Adam(filter(lambda p: p.requires_grad, policy.parameters()), lr=1e-3)
 
     # init model
     model = cknrm(args, embedding_init)
