@@ -7,9 +7,9 @@
 query text \t document text \t relevance label \t query id \t document id \t bm25 score  
 ```
 * Output is a trec file
-* All resouce can be found at Tsinghua Cloud.
+* All resouce can be found at Amazon Web Services.
 ```
-https://cloud.tsinghua.edu.cn/d/a801f337a3b14892a138/
+https://thunlp.s3-us-west-1.amazonaws.com/reinfoselect_cknrm_covid19
 ```
 
 ## Requirements
