@@ -241,7 +241,5 @@ def main():
                     tmp["records"].append({"paper_id":value[1], "score":value[0], "paragraph":value[3]})
             writer.write(json.dumps(tmp) + '\n')
 
-
-
 if __name__ == "__main__":
     main()
