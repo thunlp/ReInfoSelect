@@ -188,7 +188,7 @@ def main():
     parser.add_argument('--batch_size', default=32, type=int, help='batch size')
     parser.add_argument('--cnn_kernel', default=128, type=int, help='cnn kernel size')
     parser.add_argument('--max_query_len', default=20, type=int, help='max query length')
-    parser.add_argument('--max_doc_len', default=256, type=int, help='max doc length')
+    parser.add_argument('--max_doc_len', default=128, type=int, help='max doc length')
 
     args = parser.parse_args()
     args.cuda = not args.no_cuda
