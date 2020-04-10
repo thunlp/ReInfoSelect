@@ -28,7 +28,7 @@ bash ./inference.sh
 ```
 or
 ```
-python cknrm_inference.py \
+CUDA_VISIBLE_DEVICES=0 python cknrm_inference.py \
 --test_file {input jsonl} \
 --out_path {output jsonl} \
 --pretrained_model {cknrm checkpoint} \
