@@ -3,10 +3,9 @@ import json
 import argparse
 import numpy as np
 import torch
-from torch import nn, optim
+from torch import nn
 from torch.autograd import Variable
 import torch.nn.functional as F
-from torch.utils.data import Dataset, TensorDataset, DataLoader, RandomSampler, SequentialSampler
 
 from nltk.corpus import stopwords
 sws = {}
@@ -14,8 +13,6 @@ for w in stopwords.words('english'):
     sws[w] = 1
 from krovetzstemmer import Stemmer
 stemmer = Stemmer()
-
-
 
 test_file = "/home3/zhangkaitao/retrieval/test_cx/dev_ext.tsv"
 pretrained_model = '/home1/zhangkaitao/models/reinfoselect_cknrm_kt4'
@@ -206,10 +203,9 @@ def create_embeddings(idx2word, word2vec):
     return embedding_matrix
 
 class devFeatures(object):
-    def __init__(self, query_id, doc_id, qd_score, query, doc, raw_score, query_idx, doc_idx, query_len, doc_len):
+    def __init__(self, query_id, doc_id, query, doc, raw_score, query_idx, doc_idx, query_len, doc_len):
         self.query_id = query_id
         self.doc_id = doc_id
-        self.qd_score = qd_score
         self.query = query
         self.doc = doc
         self.raw_score = raw_score
@@ -243,37 +239,34 @@ def read_data_to_features(input_file, word2idx, args):
         features = []
         for line in reader:
             cnt += 1
-            s = line.strip('\n').split('\t')
+            s = json.loads(line)
 
-            qd_score = 0
-            query_id = s[3]
-            doc_id = s[4]
-            raw_score = float(s[5])
-            query_toks = filter_sw(raw2tok(s[0]), args.max_query_len)
-            doc_toks = filter_sw(raw2tok(s[1]), args.max_doc_len)
-
+            query_id = s['query_id']
+            query_toks = filter_sw(raw2tok(s['query']), args.max_query_len)
             query_len = len(query_toks)
-            doc_len = len(doc_toks)
-
             while len(query_toks) < 3:
                 query_toks.append('<PAD>')
-            while len(doc_toks) < 3:
-                doc_toks.append('<PAD>')
-
             query_idx = tok2idx(query_toks, word2idx)
-            doc_idx = tok2idx(doc_toks, word2idx)
 
-            features.append(devFeatures(
-                query_id = query_id,
-                doc_id = doc_id,
-                qd_score = qd_score,
-                query = s[0],
-                doc = s[1],
-                raw_score = raw_score,
-                query_idx = query_idx,
-                doc_idx = doc_idx,
-                query_len = query_len,
-                doc_len = doc_len))
+            for rec in s['records']:
+                doc_id = rec['paper_id']
+                raw_score = float(rec['score'])
+                doc_toks = filter_sw(raw2tok(rec['paragraph']), args.max_doc_len)
+                doc_len = len(doc_toks)
+                while len(doc_toks) < 3:
+                    doc_toks.append('<PAD>')
+                doc_idx = tok2idx(doc_toks, word2idx)
+
+                features.append(devFeatures(
+                    query_id = query_id,
+                    doc_id = doc_id,
+                    query = s['query'],
+                    doc = rec['paragraph'],
+                    raw_score = raw_score,
+                    query_idx = query_idx,
+                    doc_idx = doc_idx,
+                    query_len = query_len,
+                    doc_len = doc_len))
 
         return features
 
@@ -313,7 +306,6 @@ def devDataLoader(features, batch_size):
 
         query_id = [features[i].query_id for i in batch_idx]
         doc_id = [features[i].doc_id for i in batch_idx]
-        qd_score = [features[i].qd_score for i in batch_idx]
         query = [features[i].query for i in batch_idx]
         doc = [features[i].doc for i in batch_idx]
         raw_score = torch.tensor([features[i].raw_score for i in batch_idx], dtype=torch.float)
@@ -325,7 +317,7 @@ def devDataLoader(features, batch_size):
         query_idx = nn.utils.rnn.pad_sequence(query_idx, batch_first=True)
         doc_idx = nn.utils.rnn.pad_sequence(doc_idx, batch_first=True)
 
-        batch = (query_id, doc_id, qd_score, query, doc, raw_score, query_idx, doc_idx, query_len, doc_len)
+        batch = (query_id, doc_id, query, doc, raw_score, query_idx, doc_idx, query_len, doc_len)
         batches.append(batch)
     return batches
 
@@ -365,10 +357,9 @@ def main():
     for s, batch in enumerate(test_data):
         query_id = batch[0]
         doc_id = batch[1]
-        qd_score = batch[2]
-        query = batch[3]
-        doc = batch[4]
-        batch = tuple(t.to(device) for t in batch[5:])
+        query = batch[2]
+        doc = batch[3]
+        batch = tuple(t.to(device) for t in batch[4:])
         (raw_score, query_idx, doc_idx, query_len, doc_len) = batch
 
         with torch.no_grad():
@@ -376,20 +367,25 @@ def main():
         d_scores = doc_scores.detach().cpu().tolist()
         d_features = doc_features.detach().cpu().tolist()
         raw_score = raw_score.detach().cpu().tolist()
-        for (q_id, d_id, qd_s, q, d, r_s, d_s, d_f) in zip(query_id, doc_id, qd_score, query, doc, raw_score, d_scores, d_features):
+        for (q_id, d_id, q, d, r_s, d_s, d_f) in zip(query_id, doc_id, query, doc, raw_score, d_scores, d_features):
             if q_id in rst_dict:
-                rst_dict[q_id].append((qd_s, d_s, d_id, q, d))
+                rst_dict[q_id].append((d_s, d_id, q, d))
             else:
-                rst_dict[q_id] = [(qd_s, d_s, d_id, q, d)]
+                rst_dict[q_id] = [(d_s, d_id, q, d)]
 
     with open(args.out_path, 'w') as writer:
-        for q_id, scores in rst_dict.items():
-            ps = {}
-            res = sorted(scores, key=lambda x: x[1], reverse=True)
+        tmp = {"query_id": "", "records": []}
+        for q_id, records in rst_dict.items():
+            tmp["query_id"] = q_id
+            tmp["query"] = rst_dict[q_id][0][2]
+            tmp["records"] = []
+            max_pool = []
+            res = sorted(records, key=lambda x: x[0], reverse=True)
             for rank, value in enumerate(res):
-                if value[2] not in ps:
-                    ps[value[2]] = 1
-                    writer.write(q_id+' '+'Q0'+' '+str(value[2])+' '+str(len(ps))+' '+str(value[1])+' '+'Conv-KNRM'+'\n')
+                if value[1] not in max_pool:
+                    max_pool.append(value[1])
+                    tmp["records"].append({"paper_id":value[1], "score":value[0], "paragraph":value[3]})
+            writer.write(json.dumps(tmp) + '\n')
 
 
 

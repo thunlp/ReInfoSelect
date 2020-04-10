@@ -2,11 +2,11 @@
 
 
 ## Datasets
-* The input data (named ``test.txt``) is retrieved by BM25 method and the file is constructed with below format
+* The input data (named ``bm25.jsonl``) is retrieved by BM25 method and each line of the file is constructed with below format
 ```
-query text \t document text \t relevance label \t query id \t document id \t bm25 score  
+{"query_id": query_id, "query": query_text, "records": [{"paper_id": paper_id, "score": bm25 score, "paragraph": paragraph text}, ...]}
 ```
-* Output is a trec file
+* Output is a jsonl file, the same format as input file.
 * All resouce can be found at Amazon Web Services.
 ```
 https://thunlp.s3-us-west-1.amazonaws.com/reinfoselect_cknrm_covid19
