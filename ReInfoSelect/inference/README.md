@@ -8,7 +8,7 @@
 * Output is a jsonl file, the same format as input file.
 * Checkpoints are available at Amazon Web Services.
 ```
-https://thunlp.s3-us-west-1.amazonaws.com/reinfoselect_cknrm_covid19
+wget https://thunlp.s3-us-west-1.amazonaws.com/reinfoselect_cknrm_covid19
 ```
 
 ## Requirements
