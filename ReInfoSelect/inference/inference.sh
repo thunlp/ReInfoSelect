@@ -1,4 +1,4 @@
-python cknrm_inference.py \
+CUDA_VISIBLE_DEVICES=0 python cknrm_inference.py \
 --test_file ./test.txt \
 --out_path ./cknrm.trec \
 --pretrained_model ./reinfoselect_cknrm_covid19 \
