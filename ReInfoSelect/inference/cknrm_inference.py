@@ -14,9 +14,6 @@ for w in stopwords.words('english'):
 from krovetzstemmer import Stemmer
 stemmer = Stemmer()
 
-test_file = "/home3/zhangkaitao/retrieval/test_cx/dev_ext.tsv"
-pretrained_model = '/home1/zhangkaitao/models/reinfoselect_cknrm_kt4'
-
 regex_drop_char = re.compile('[^a-z0-9\s]+')
 regex_multi_space = re.compile('\s+')
 
@@ -105,7 +102,6 @@ class cknrm(nn.Module):
 
     def get_intersect_matrix(self, q_embed, d_embed, atten_q, atten_d):
         sim = torch.bmm(q_embed, d_embed).view(q_embed.size()[0], q_embed.size()[1], d_embed.size()[2], 1)
-        # np.save('/data/disk4/private/zhangjuexiao/e2e_case/rank_case'+"_"+str(q_embed.size()[1])+"_"+str(d_embed.size()[2]), sim.data.cpu().numpy())
         pooling_value = torch.exp((- ((sim - self.mu) ** 2) / (self.sigma ** 2) / 2)) * atten_d.type_as(self.sigma)
         pooling_sum = torch.sum(pooling_value, 2)
         log_pooling_sum = torch.log(torch.clamp(pooling_sum, min=1e-10)) * atten_q.type_as(self.sigma)
