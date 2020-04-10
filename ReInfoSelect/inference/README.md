@@ -8,6 +8,9 @@ query text \t document text \t relevance label \t query id \t document id \t bm2
 ```
 * Output is a trec file
 * All resouce can be found at Tsinghua Cloud.
+```
+https://cloud.tsinghua.edu.cn/d/a801f337a3b14892a138/
+```
 
 ## Requirements
 
