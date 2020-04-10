@@ -34,7 +34,7 @@ As we cannot release the document contents, the document IDs are used instead.
 
 ## Requirements
 
-* `python == `3.7`
+* `python == 3.7`
 * `torch >= 1.0.0`
 
 To run ReInfoSelect, please install all requirements.
