@@ -111,19 +111,19 @@ class cknrm(nn.Module):
     def forward(self, qw_embed, dw_embed, inputs_qwm, inputs_dwm, raw_score=None):
         qwu_embed = torch.transpose(
             torch.squeeze(self.conv_uni(qw_embed.view(qw_embed.size()[0], 1, -1, self.d_word_vec)), dim=3), 1,
-            2) + 0.000000001
+            2) + 1e-10
         qwb_embed = torch.transpose(
             torch.squeeze(self.conv_bi(qw_embed.view(qw_embed.size()[0], 1, -1, self.d_word_vec)), dim=3), 1,
-            2) + 0.000000001
+            2) + 1e-10
         qwt_embed = torch.transpose(
             torch.squeeze(self.conv_tri(qw_embed.view(qw_embed.size()[0], 1, -1, self.d_word_vec)), dim=3), 1,
-            2) + 0.000000001
+            2) + 1e-10
         dwu_embed = torch.squeeze(self.conv_uni(dw_embed.view(dw_embed.size()[0], 1, -1, self.d_word_vec)),
-                                  dim=3) + 0.000000001
+                                  dim=3) + 1e-10
         dwb_embed = torch.squeeze(self.conv_bi(dw_embed.view(dw_embed.size()[0], 1, -1, self.d_word_vec)),
-                                  dim=3) + 0.000000001
+                                  dim=3) + 1e-10
         dwt_embed = torch.squeeze(self.conv_tri(dw_embed.view(dw_embed.size()[0], 1, -1, self.d_word_vec)),
-                                  dim=3) + 0.000000001
+                                  dim=3) + 1e-10
         qwu_embed_norm = F.normalize(qwu_embed, p=2, dim=2, eps=1e-10)
         qwb_embed_norm = F.normalize(qwb_embed, p=2, dim=2, eps=1e-10)
         qwt_embed_norm = F.normalize(qwt_embed, p=2, dim=2, eps=1e-10)
@@ -266,9 +266,9 @@ def read_data_to_features(input_file, word2idx, args):
 
         return features
 
-class Multi_Trans(nn.Module):
+class CKNRM(nn.Module):
     def __init__(self, embedding_matrix, args):
-        super(Multi_Trans, self).__init__()
+        super(CKNRM, self).__init__()
         em = torch.tensor(embedding_matrix, dtype=torch.float32).cuda()
         self.embedding = nn.Embedding(args.vocab_size, args.embedding_dim)
         self.embedding.weight = nn.Parameter(em)
@@ -337,7 +337,7 @@ def main():
     idx2word, word2idx, word2vec = load_glove(args.embedding_path)
     embedding_matrix = create_embeddings(idx2word, word2vec)
 
-    model = Multi_Trans(embedding_matrix, args)
+    model = CKNRM(embedding_matrix, args)
     state_dict=torch.load(args.pretrained_model)
     model.load_state_dict(state_dict)
 
