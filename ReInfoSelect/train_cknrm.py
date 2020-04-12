@@ -63,11 +63,16 @@ def train(args, policy, p_optim, model, m_optim, crit, word2vec, dev_data, devic
             probs = policy(query_idx, pos_idx, query_len, pos_len)
             dist  = Categorical(probs)
             action = dist.sample()
+            if action.sum().item() < 1 and step % args.T != 0:
+                continue
+
+            mask = action.ge(0.5)
             weights = Variable(action, requires_grad=False).cuda()
             log_prob_p = dist.log_prob(action)
             log_prob_n = dist.log_prob(1-action)
+            log_prob_ps.append(torch.masked_select(log_prob_p, mask))
+            log_prob_ns.append(torch.masked_select(log_prob_n, mask))
 
-            m_optim.zero_grad()
             p_scores, _ = model(query_idx, pos_idx, query_len, pos_len)
             n_scores, _ = model(query_idx, neg_idx, query_len, neg_len)
             label = torch.ones(p_scores.size()).to(device)
@@ -75,9 +80,7 @@ def train(args, policy, p_optim, model, m_optim, crit, word2vec, dev_data, devic
             batch_loss = batch_loss.mul(weights).mean()
             batch_loss.backward()
             m_optim.step()
-
-            log_prob_ps.append(log_prob_p)
-            log_prob_ns.append(log_prob_n)
+            m_optim.zero_grad()
 
             ndcg, err = dev(args, model, dev_data, device)
             if ndcg > best_ndcg:
@@ -100,10 +103,10 @@ def train(args, policy, p_optim, model, m_optim, crit, word2vec, dev_data, devic
                         returns.insert(0, -R)
                 for lp, r in zip(log_probs, returns):
                     policy_loss.append((-lp * r).sum().unsqueeze(-1))
-                p_optim.zero_grad()
                 loss = torch.cat(policy_loss).sum()
                 loss.backward()
                 p_optim.step()
+                p_optim.zero_grad()
 
                 log_prob_ps = []
                 log_prob_ns = []
