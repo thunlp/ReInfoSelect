@@ -34,9 +34,9 @@ bash ./inference.sh
 or
 ```
 CUDA_VISIBLE_DEVICES=0 python cknrm_inference.py \
---test_file {input jsonl} \
---out_path {output jsonl} \
---pretrained_model {cknrm checkpoint} \
---embedding_path {glove.6B.300d.txt} \
+--test_file {path to input jsonl} \
+--out_path {path to output jsonl} \
+--pretrained_model {path to a single checkpoint file or a folder witch contains several checkpoints} \
+--embedding_path {path to glove.6B.300d.txt} \
 --max_doc_len {max_doc_len}
 ```
