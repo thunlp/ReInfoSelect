@@ -181,6 +181,7 @@ def main():
     parser.add_argument('--no_cuda', action='store_true', default=False, help='Disables CUDA training.')
     parser.add_argument('--test_file', help='test file path')
     parser.add_argument('--out_path', help='out path to save trec file')
+    parser.add_argument('--ensemble', default=False, help='ensemble or not')
     parser.add_argument('--pretrained_model', help='check point to load')
     parser.add_argument('--vocab_size', default=400002, type=int, help='vocab size with padding and unk words')
     parser.add_argument('--embedding_dim', default=300, type=int, help='embedding dim')

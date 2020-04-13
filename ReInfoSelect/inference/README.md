@@ -12,7 +12,8 @@ wget http://nlp.stanford.edu/data/glove.6B.zip
 ```
 * Get checkpoints.
 ```
-wget https://thunlp.s3-us-west-1.amazonaws.com/reinfoselect_cknrm_covid19
+wget https://thunlp.s3-us-west-1.amazonaws.com/reinfoselect_cknrm_128
+wget https://thunlp.s3-us-west-1.amazonaws.com/reinfoselect_cknrm_256
 ```
 
 ## Requirements
@@ -36,5 +37,6 @@ CUDA_VISIBLE_DEVICES=0 python cknrm_inference.py \
 --test_file {input jsonl} \
 --out_path {output jsonl} \
 --pretrained_model {cknrm checkpoint} \
---embedding_path {glove.6B.300d.txt}
+--embedding_path {glove.6B.300d.txt} \
+--max_doc_len {max_doc_len}
 ```
