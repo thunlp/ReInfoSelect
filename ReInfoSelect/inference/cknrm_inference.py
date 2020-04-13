@@ -250,6 +250,7 @@ def main():
             max_pool = []
             res = sorted(records.items(), key=lambda x: x[1][0], reverse=True)
             for rank, value in enumerate(res):
+                tmp['query'] = value[1][1]
                 if value[0] not in max_pool:
                     max_pool.append(value[0])
                     tmp["records"].append({"paper_id":value[0], "score":value[1][0], "paragraph":value[1][3]})
