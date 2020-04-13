@@ -1,3 +1,4 @@
+import os
 import re
 import json
 import argparse
@@ -181,7 +182,6 @@ def main():
     parser.add_argument('--no_cuda', action='store_true', default=False, help='Disables CUDA training.')
     parser.add_argument('--test_file', help='test file path')
     parser.add_argument('--out_path', help='out path to save trec file')
-    parser.add_argument('--ensemble', default=False, help='ensemble or not')
     parser.add_argument('--pretrained_model', help='check point to load')
     parser.add_argument('--vocab_size', default=400002, type=int, help='vocab size with padding and unk words')
     parser.add_argument('--embedding_dim', default=300, type=int, help='embedding dim')
@@ -197,49 +197,62 @@ def main():
     embedding_matrix = create_embeddings(idx2word, word2vec)
 
     model = Ranker(embedding_matrix, args)
-    state_dict=torch.load(args.pretrained_model)
-    model.load_state_dict(state_dict)
 
-    device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
-    model.to(device)
+    chpts = []
+    if os.path.isfile(args.pretrained_model):
+        chpts.append(args.pretrained_model)
+    elif os.path.isdir(args.pretrained_model):
+        for chpt in os.listdir(args.pretrained_model):
+            chpts.append(os.path.join(args.pretrained_model, chpt))
+    else:
+        print('pretrained_model must be a path to checkpoint file or folders')
+        exit()
+        
 
     # test data
     test_features = read_data_to_features(args.test_file, word2idx, args)
     test_data = devDataLoader(test_features, args.batch_size)
-
-    # test
+    
     rst_dict = {}
-    for s, batch in enumerate(test_data):
-        query_id = batch[0]
-        doc_id = batch[1]
-        query = batch[2]
-        doc = batch[3]
-        batch = tuple(t.to(device) for t in batch[4:])
-        (raw_score, query_idx, doc_idx, query_len, doc_len) = batch
+    for chpt in chpts:
+        state_dict=torch.load(chpt)
+        model.load_state_dict(state_dict)
 
-        with torch.no_grad():
-            doc_scores, doc_features = model(query_idx, doc_idx, None, query_len, doc_len, None, raw_score, False)
-        d_scores = doc_scores.detach().cpu().tolist()
-        d_features = doc_features.detach().cpu().tolist()
-        raw_score = raw_score.detach().cpu().tolist()
-        for (q_id, d_id, q, d, r_s, d_s, d_f) in zip(query_id, doc_id, query, doc, raw_score, d_scores, d_features):
-            if q_id in rst_dict:
-                rst_dict[q_id].append((d_s, d_id, q, d))
-            else:
-                rst_dict[q_id] = [(d_s, d_id, q, d)]
+        device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
+        model.to(device)
+
+        # test
+        for s, batch in enumerate(test_data):
+            query_id = batch[0]
+            doc_id = batch[1]
+            query = batch[2]
+            doc = batch[3]
+            batch = tuple(t.to(device) for t in batch[4:])
+            (raw_score, query_idx, doc_idx, query_len, doc_len) = batch
+
+            with torch.no_grad():
+                doc_scores, doc_features = model(query_idx, doc_idx, None, query_len, doc_len, None, raw_score, False)
+            d_scores = doc_scores.detach().cpu().tolist()
+            d_features = doc_features.detach().cpu().tolist()
+            raw_score = raw_score.detach().cpu().tolist()
+            for (q_id, d_id, q, d, r_s, d_s, d_f) in zip(query_id, doc_id, query, doc, raw_score, d_scores, d_features):
+                if q_id not in rst_dict:
+                    rst_dict[q_id] = {}
+                if d_id not in rst_dict[q_id]:
+                    rst_dict[q_id][d_id] = [0.0, q, d]
+                rst_dict[q_id][d_id][0] += d_s
 
     with open(args.out_path, 'w') as writer:
         tmp = {"query_id": "", "records": []}
         for q_id, records in rst_dict.items():
             tmp["query_id"] = q_id
-            tmp["query"] = rst_dict[q_id][0][2]
             tmp["records"] = []
             max_pool = []
-            res = sorted(records, key=lambda x: x[0], reverse=True)
+            res = sorted(records.items(), key=lambda x: x[1][0], reverse=True)
             for rank, value in enumerate(res):
-                if value[1] not in max_pool:
-                    max_pool.append(value[1])
-                    tmp["records"].append({"paper_id":value[1], "score":value[0], "paragraph":value[3]})
+                if value[0] not in max_pool:
+                    max_pool.append(value[0])
+                    tmp["records"].append({"paper_id":value[0], "score":value[1][0], "paragraph":value[1][3]})
             writer.write(json.dumps(tmp) + '\n')
 
 if __name__ == "__main__":
