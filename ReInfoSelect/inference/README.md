@@ -1,7 +1,7 @@
 # Inferece Code of Conv-KNRM on COVID19
 
 ## Datasets
-* The input data (named ``bm25.jsonl``) is retrieved by BM25 method and each line of the file is constructed with below format
+* The input data (named ``dlg_bm25.jsonl``) is retrieved by BM25 method and each line of the file is constructed with below format
 ```
 {"query_id": query_id, "query": query_text, "records": [{"paper_id": paper_id, "score": bm25 score, "paragraph": paragraph text}, ...]}
 ```
@@ -12,8 +12,8 @@ wget http://nlp.stanford.edu/data/glove.6B.zip
 ```
 * Get checkpoints.
 ```
-wget https://thunlp.s3-us-west-1.amazonaws.com/reinfoselect_cknrm_128
-wget https://thunlp.s3-us-west-1.amazonaws.com/reinfoselect_cknrm_256
+wget https://thunlp.s3-us-west-1.amazonaws.com/dlg_marco_recknrm_128
+wget https://thunlp.s3-us-west-1.amazonaws.com/dlg_marco_recknrm_256
 ```
 
 ## Requirements
