@@ -1,21 +1,17 @@
+import torch
 import torch.nn as nn
 from transformers import *
 
-class BertForRanking(nn.Module):
-    def __init__(self):
-        super(BertForRanking, self).__init__()
-        model = model_class.from_pretrained('bert-base-uncased')
+class BertForRanking(BertPreTrainedModel):
+    def __init__(self, config):
+        super(BertForRanking, self).__init__(config)
 
-        feature_dim = 768
-        self.tanh = nn.Tanh()
-        self.dense = nn.Linear(feature_dim, 1)
-        self.dense_p = nn.Linear(feature_dim + 1, 1)
+        self.bert = BertModel(config)
+        self.dense = nn.Linear(config.hidden_size, 2)
 
-    def forward(self, inst, tok, mask, raw_score=None):
-        output = self.bert(inst, token_type_ids=tok, attention_mask=mask)
-        if score_feature is not None:
-            logits = torch.cat([output[1], raw_score.unsqueeze(1)], 1)
-            score = self.tanh(self.dense_p(output[1])).squeeze(-1)
-        else:
-            score = self.tanh(self.dense(output[1])).squeeze(-1)
+        self.init_weights()
+
+    def forward(self, input_ids, attention_mask=None, token_type_ids=None):
+        output = self.bert(input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
+        score = self.dense(output[1])[:, 1]
         return score, output[1]
