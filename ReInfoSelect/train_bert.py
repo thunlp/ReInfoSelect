@@ -4,7 +4,6 @@ import numpy as np
 import torch
 from torch import nn, optim
 from torch.autograd import Variable
-import torch.nn.functional as F
 
 from transformers import *
 
@@ -117,11 +116,11 @@ def train(args, policy, p_optim, model, m_optim, crit, word2vec, tokenizer, dev_
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-task', choices=['ClueWeb09', 'Robust04', 'ClueWeb12'], default='ClueWeb09')
     parser.add_argument('-train', default='./data/weak_supervision.tsv')
     parser.add_argument('-dev', default='./data/ClueWeb09/dev.tsv')
     parser.add_argument('-qrels', default='./data/ClueWeb09/qrels')
     parser.add_argument('-embed', default='./data/glove.6B.300d.txt')
+    parser.add_argument('-model', default='bert-base-uncased')
     parser.add_argument('-vocab_size', default=400002)
     parser.add_argument('-embed_dim', default=300)
     parser.add_argument('-res', default='./out.trec')
@@ -129,14 +128,15 @@ def main():
     parser.add_argument('-gamma', default=0.99)
     parser.add_argument('-T', default=4)
     parser.add_argument('-n_kernels', default=21)
-    parser.add_argument('-max_seq_len', default=128)
+    parser.add_argument('-max_query_len', default=64)
+    parser.add_argument('-max_seq_len', default=512)
     parser.add_argument('-epoch', default=1)
     parser.add_argument('-batch_size', default=4)
     args = parser.parse_args()
 
     # init embedding
     word2vec, embedding_init = embloader(args)
-    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+    tokenizer = BertTokenizer.from_pretrained(args.model)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -146,15 +146,12 @@ def main():
     p_optim = torch.optim.Adam(filter(lambda p: p.requires_grad, policy.parameters()), lr=1e-4)
 
     # init model
-    model = BertForRanking()
+    cnofig = BertConfig.from_pretrained(args.model)
+    model = BertForRanking.from_pretrained(args.model, config=config)
     model.to(device)
 
     # init optimizer and load dev_data
-    optimizer_grouped_parameters = [{'params': [], 'weight_decay': 0.0}]
-    param_optimizer = list(model.named_parameters())
-    for n, p in param_optimizer:
-        optimizer_grouped_parameters[0]['params'].append(p)
-    m_optim = AdamW(optimizer_grouped_parameters, lr=5e-5)
+    m_optim = AdamW(model.parameters(), lr=5e-5)
     dev_data = bert_dev_dataloader(args, tokenizer)
 
     # loss function
