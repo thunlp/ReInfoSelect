@@ -13,11 +13,10 @@ class all_policy(nn.Module):
             self.embedding.weight = nn.Parameter(em)
             self.embedding.weight.requires_grad = True
 
-        kernels = [3,4,5]
+        kernels = [1, 2, 3]
         self.q_clas = nn.ModuleList([nn.Conv2d(1, 100, (k, args.embed_dim)) for k in kernels])
         self.d_clas = nn.ModuleList([nn.Conv2d(1, 100, (k, args.embed_dim)) for k in kernels])
         self.qd_clas = cknrm(args, embedding_init)
-        self.dropout = nn.Dropout(0.5)
 
         self.q_actor = nn.Linear(len(kernels)*100, 2)
         self.d_actor = nn.Linear(len(kernels)*100, 2)
@@ -31,17 +30,14 @@ class all_policy(nn.Module):
         q_logits = [F.relu(conv(query_embed)).squeeze(3) for conv in self.q_clas]
         q_logits = [F.max_pool1d(i, i.size(2)).squeeze(2) for i in q_logits]
         q_logits = torch.cat(q_logits, 1)
-        q_logits = self.dropout(q_logits)
  
         doc_embed = self.embedding(doc_idx)
         doc_embed = doc_embed.unsqueeze(1)
         d_logits = [F.relu(conv(doc_embed)).squeeze(3) for conv in self.d_clas]
         d_logits = [F.max_pool1d(i, i.size(2)).squeeze(2) for i in d_logits]
         d_logits = torch.cat(d_logits, 1)
-        d_logits = self.dropout(d_logits)
 
         _, qd_logits = self.qd_clas(query_idx, doc_idx, query_len, doc_len)
-        qd_logits = self.dropout(qd_logits)
 
         q_probs = self.q_actor(q_logits).unsqueeze(2)
         d_probs = self.d_actor(d_logits).unsqueeze(2)
