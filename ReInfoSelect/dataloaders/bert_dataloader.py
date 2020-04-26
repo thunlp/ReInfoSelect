@@ -74,7 +74,7 @@ def read_train_to_features(args, word2idx, tokenizer):
             pos_toks = s[1].split()
             neg_toks = s[2].split()
 
-            query_toks = query_toks[:20]
+            query_toks = query_toks[:args.max_query_len]
             pos_toks = pos_toks[:args.max_seq_len]
             neg_toks = neg_toks[:args.max_seq_len]
 
@@ -82,7 +82,7 @@ def read_train_to_features(args, word2idx, tokenizer):
             pos_len = len(pos_toks)
             neg_len = len(neg_toks)
 
-            while len(query_toks) < 20:
+            while len(query_toks) < args.max_query_len:
                 query_toks.append('<PAD>')
             while len(pos_toks) < args.max_seq_len:
                 pos_toks.append('<PAD>')
@@ -136,13 +136,13 @@ def read_dev_to_features(args, tokenizer):
             doc_id = s[4]
             raw_score = float(s[5])
 
-            query_toks = query_toks[:20]
+            query_toks = query_toks[:args.max_query_len]
             doc_toks = doc_toks[:args.max_seq_len]
 
             query_len = len(query_toks)
             doc_len = len(doc_toks)
 
-            while len(query_toks) < 20:
+            while len(query_toks) < args.max_query_len:
                 query_toks.append('<PAD>')
             while len(doc_toks) < args.max_seq_len:
                 doc_toks.append('<PAD>')
