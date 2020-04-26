@@ -4,7 +4,6 @@ import numpy as np
 import torch
 from torch import nn
 from torch.autograd import Variable
-import torch.nn.functional as F
 
 from policy import all_policy
 from dataloaders import *
@@ -115,7 +114,6 @@ def train(args, policy, p_optim, model, m_optim, crit, word2vec, dev_data, devic
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-task', choices=['ClueWeb09', 'Robust04', 'ClueWeb12'], default='ClueWeb09')
     parser.add_argument('-train', default='./data/weak_supervision.tsv')
     parser.add_argument('-dev', default='./data/ClueWeb09/dev.tsv')
     parser.add_argument('-qrels', default='./data/ClueWeb09/qrels')
@@ -127,6 +125,7 @@ def main():
     parser.add_argument('-gamma', default=0.99)
     parser.add_argument('-T', default=4)
     parser.add_argument('-n_kernels', default=21)
+    parser.add_argument('-max_query_len', default=20)
     parser.add_argument('-max_seq_len', default=128)
     parser.add_argument('-epoch', default=1)
     parser.add_argument('-batch_size', default=32)
