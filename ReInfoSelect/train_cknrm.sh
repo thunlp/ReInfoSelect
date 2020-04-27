@@ -1,8 +1,8 @@
 CUDA_VISIBLE_DEVICES=0 \
 python train_cknrm.py \
-        -train ../data/weak_supervision.tsv \
-        -dev ../data/ClueWeb09/dev.tsv \
-        -qrels ../data/ClueWeb09/qrels \
+        -train ../data/triples.train.small.tsv \
+        -dev ../data/dev_toy.tsv \
+        -qrels ../data/qrels_toy \
         -embed ../data/glove.6B.300d.txt \
         -vocab_size 400002 \
         -embed_dim 300 \

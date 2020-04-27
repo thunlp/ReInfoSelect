@@ -52,9 +52,12 @@ docker build -t reinfoselect_official:v0.1 .
 
 ## data
 ```
-cd data
+cd data/
 wget http://nlp.stanford.edu/data/glove.6B.zip
 unzip glove.6B.zip
+wget https://msmarco.blob.core.windows.net/msmarcoranking/triples.train.small.tar.gz
+tar -zxvf triples.train.small.tar.gz
+cd ../ReInfoSelect/
 ```
 
 ## Run

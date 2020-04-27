@@ -1,8 +1,8 @@
 CUDA_VISIBLE_DEVICES=0 \
 python train_bert.py \
-        -train ../data/weak_supervision.tsv \
-        -dev ../data/dev.tsv \
-        -qrels ../data/qrels \
+        -train ../data/triples.train.small.tsv \
+        -dev ../data/dev_toy.tsv \
+        -qrels ../data/qrels_toy \
         -embed ../data/glove.6B.300d.txt \
         -model bert-base-uncased \
         -vocab_size 400002 \
