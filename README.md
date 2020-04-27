@@ -50,11 +50,15 @@ cd docker
 docker build -t reinfoselect_official:v0.1 .
 ```
 
-## Get Started
+## data
+```
+cd data
+wget http://nlp.stanford.edu/data/glove.6B.zip
+unzip glove.6B.zip
+```
+
+## Run
 First, please prepare your data in recommended [format](./data).
-```
-python ./data/preprocess.py
-```
 
 For Conv-KNRM,
 ```

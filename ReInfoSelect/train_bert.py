@@ -62,7 +62,7 @@ def train(args, policy, p_optim, model, m_optim, crit, word2vec, tokenizer, dev_
             batch = tuple(t.to(device) for t in batch)
             (query_idx, doc_idx, query_len, doc_len, p_input_ids, p_input_mask, p_segment_ids, n_input_ids, n_input_mask, n_segment_ids) = batch
 
-            probs = policy(query_idx, pos_idx, query_len, pos_len)
+            probs = policy(query_idx, doc_idx, query_len, doc_len)
             dist  = Categorical(probs)
             action = dist.sample()
             if action.sum().item() < 1 and step % args.T != 0:
