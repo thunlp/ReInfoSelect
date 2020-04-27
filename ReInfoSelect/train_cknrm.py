@@ -32,7 +32,6 @@ def dev(args, model, dev_data, device):
             feature.append('id:' + q_id)
             for i, fi in enumerate(d_f):
                 feature.append(str(i+1) + ':' + str(fi))
-            feature.append('#' + d_id)
             features.append(' '.join(feature))
             if q_id in rst_dict:
                 rst_dict[q_id].append((qd_s, d_s, d_id))
