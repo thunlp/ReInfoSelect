@@ -78,6 +78,8 @@ Finally, concatenate the neural features with SDM score and run Coor-Ascent usin
 bash coor_ascent.sh
 ```
 
+You can change the mode from *train* to *infer* and add *-checkpoint* in *train_cknrm.sh* or *train_bert.sh* for inference.
+
 ## Citation
 Please cite our paper if you find it helpful.
 

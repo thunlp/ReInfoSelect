@@ -175,7 +175,7 @@ def main():
         crit = nn.DataParallel(crit)
 
     if args.mode == 'train':
-        train(args, policy, p_optim, model, m_optim, crit, word2vec, tokenizer, dev_data, device)
+        train(args, policy, p_optim, model, m_optim, crit, word2vec, dev_data, device)
     elif args.mode == 'infer':
         assert args.checkpoint is not None
         state_dict=torch.load(args.checkpoint)
