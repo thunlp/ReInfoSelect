@@ -2,8 +2,8 @@ import json
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-dev', type=str, default='./data/ClueWeb09/dev.tsv')
-    parser.add_argument('-res', type=str, default='./results/cknrm.trec')
+    parser.add_argument('-dev', type=str, default='../data/dev_toy.tsv')
+    parser.add_argument('-res', type=str, default='../results/cknrm.trec')
     args = parser.parse_args()
 
     score_dic = {}
@@ -32,5 +32,5 @@ def main():
         for i, out in enumerate(out_idx):
             if out[0] not in ps:
                 ps[out[0]] = 1
-                f.write(' '.join([qid, 'Q0', out[0], str(len(ps)), str(out[1]), 'BERT']) + '\n')
+                f.write(' '.join([qid, 'Q0', out[0], str(len(ps)), str(out[1]), 'default']) + '\n')
     f.close()

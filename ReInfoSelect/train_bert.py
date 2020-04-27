@@ -131,10 +131,10 @@ def train(args, policy, p_optim, model, m_optim, crit, word2vec, tokenizer, dev_
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-train', type=str, default='./data/weak_supervision.tsv')
-    parser.add_argument('-dev', type=str, default='./data/ClueWeb09/dev.tsv')
-    parser.add_argument('-qrels', type=str, default='./data/ClueWeb09/qrels')
-    parser.add_argument('-embed', type=str, default='./data/glove.6B.300d.txt')
+    parser.add_argument('-train', type=str, default='../data/triples.train.small.tsv')
+    parser.add_argument('-dev', type=str, default='../data/dev_toy.tsv')
+    parser.add_argument('-qrels', type=str, default='../data/qrels_toy')
+    parser.add_argument('-embed', type=str, default='../data/glove.6B.300d.txt')
     parser.add_argument('-model', type=str, default='bert-base-uncased')
     parser.add_argument('-vocab_size', type=int, default=400002)
     parser.add_argument('-embed_dim', type=int, default=300)
