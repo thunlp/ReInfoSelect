@@ -47,7 +47,7 @@ def dev(args, model, dev_data, device):
             for rank, value in enumerate(res):
                 writer.write(q_id+' '+'Q0'+' '+str(value[2])+' '+str(rank+1)+' '+str(value[1])+' bert\n')
 
-    ndcg = ndcg(args.qrels, args.res, args.depth)
+    ndcg = cal_ndcg(args.qrels, args.res, args.depth)
     return ndcg, features
 
 def train(args, policy, p_optim, model, m_optim, crit, word2vec, tokenizer, dev_data, device):

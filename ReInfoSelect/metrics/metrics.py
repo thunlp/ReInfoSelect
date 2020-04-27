@@ -1,7 +1,7 @@
 import os
 import pytrec_eval
 
-def ndcg(qrels, trec, k):
+def cal_ndcg(qrels, trec, k):
     with open(qrels, 'r') as f_qrel:
         qrel = pytrec_eval.parse_qrel(f_qrel)
 
@@ -25,7 +25,7 @@ def ndcg(qrels, trec, k):
 
     return ndcg
 
-def err(qrels, trec, k):
+def cal_err(qrels, trec, k):
     res = os.popen('./gdeval.pl -k %d %s %s' % (k, qrels, trec))
     score = ''
     for r in res:
