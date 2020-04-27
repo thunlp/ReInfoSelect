@@ -23,7 +23,7 @@ def dev(args, model, dev_data, device):
         (raw_score, d_input_ids, d_input_mask, d_segment_ids) = batch
 
         with torch.no_grad():
-            doc_scores, _ = model(d_input_ids, d_input_mask, d_segment_ids, raw_score)
+            doc_scores, _ = model(d_input_ids, d_input_mask, d_segment_ids)
         d_scores = doc_scores.detach().cpu().tolist()
 
         for (q_id, d_id, qd_s, d_s) in zip(query_id, doc_id, qd_score, d_scores):
