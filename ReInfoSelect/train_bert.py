@@ -13,6 +13,30 @@ from dataloaders import *
 from models import BertForRanking
 from metrics import *
 
+def get_features(args, model, dev_data, device):
+    f = open(args.res, 'w')
+    for s, batch in enumerate(dev_data):
+        query_id = batch[0]
+        doc_id = batch[1]
+        qd_score = batch[2]
+        batch = tuple(t.to(device) for t in batch[3:])
+        (raw_score, d_input_ids, d_input_mask, d_segment_ids) = batch
+
+        with torch.no_grad():
+            _, doc_features = model(d_input_ids, d_input_mask, d_segment_ids, raw_score)
+        d_features = doc_features.detach().cpu().tolist()
+
+        for (q_id, d_id, qd_s, d_f) in zip(query_id, doc_id, qd_score, d_features):
+            line = []
+            line.append(str(qd_s))
+            line.append('id:' + q_id)
+            for i, fi in enumerate(d_f):
+                line.append(str(i+1) + ':' + str(fi))
+            line.append('#' + d_id)
+            f.write(' '.join(line) + '\n')
+    f.close()
+    return
+
 def dev(args, model, dev_data, device):
     rst_dict = {}
     for s, batch in enumerate(dev_data):
