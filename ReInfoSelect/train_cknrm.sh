@@ -6,7 +6,8 @@ python train_cknrm.py \
         -embed ../data/glove.6B.300d.txt \
         -vocab_size 400002 \
         -embed_dim 300 \
-        -res ../results/cknrm_out.trec \
+        -res ../results/cknrm.trec \
+        -res_f ../results/cknrm_features \
         -depth 20 \
         -gamma 0.99 \
         -T 4 \

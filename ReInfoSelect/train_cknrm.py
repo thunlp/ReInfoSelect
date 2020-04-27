@@ -11,31 +11,8 @@ from dataloaders import *
 from models import cknrm
 from metrics import *
 
-def get_features(args, model, dev_data, device):
-    f = open(args.res, 'w')
-    for s, batch in enumerate(dev_data):
-        query_id = batch[0]
-        doc_id = batch[1]
-        qd_score = batch[2]
-        batch = tuple(t.to(device) for t in batch[3:])
-        (raw_score, query_idx, doc_idx, query_len, doc_len) = batch
-
-        with torch.no_grad():
-            _, doc_features = model(query_idx, doc_idx, query_len, doc_len, raw_score)
-        d_features = doc_features.detach().cpu().tolist()
-
-        for (q_id, d_id, qd_s, d_f) in zip(query_id, doc_id, qd_score, d_features):
-            line = []  
-            line.append(str(qd_s))
-            line.append('id:' + q_id)
-            for i, fi in enumerate(d_f):
-                line.append(str(i+1) + ':' + str(fi))
-            line.append('#' + d_id)
-            f.write(' '.join(line) + '\n')
-    f.close()
-    return
-
 def dev(args, model, dev_data, device):
+    features = []
     rst_dict = {}
     for s, batch in enumerate(dev_data):
         query_id = batch[0]
@@ -45,10 +22,18 @@ def dev(args, model, dev_data, device):
         (raw_score, query_idx, doc_idx, query_len, doc_len) = batch
 
         with torch.no_grad():
-            doc_scores, _ = model(query_idx, doc_idx, query_len, doc_len)
+            doc_scores, doc_features = model(query_idx, doc_idx, query_len, doc_len, raw_score)
         d_scores = doc_scores.detach().cpu().tolist()
+        d_features = doc_features.detach().cpu().tolist()
 
-        for (q_id, d_id, qd_s, d_s) in zip(query_id, doc_id, qd_score, d_scores):
+        for (q_id, d_id, qd_s, d_s, d_f) in zip(query_id, doc_id, qd_score, d_scores, d_features):
+            feature = []
+            feature.append(str(qd_s))
+            feature.append('id:' + q_id)
+            for i, fi in enumerate(d_f):
+                feature.append(str(i+1) + ':' + str(fi))
+            feature.append('#' + d_id)
+            features.append(feature)
             if q_id in rst_dict:
                 rst_dict[q_id].append((qd_s, d_s, d_id))
             else:
@@ -63,7 +48,7 @@ def dev(args, model, dev_data, device):
     m_ndcg = ndcg(args.qrels, args.res, args.depth)
     m_err = err(args.qrels, args.res, args.depth)
     measure = [m_ndcg, m_err]
-    return measure
+    return measure, features
 
 def train(args, policy, p_optim, model, m_optim, crit, word2vec, dev_data, device):
     best_ndcg = 0.0
@@ -106,9 +91,12 @@ def train(args, policy, p_optim, model, m_optim, crit, word2vec, dev_data, devic
             m_optim.step()
             m_optim.zero_grad()
 
-            ndcg, err = dev(args, model, dev_data, device)
+            (ndcg, err), features = dev(args, model, dev_data, device)
             if ndcg > best_ndcg:
                 best_ndcg = ndcg
+                with open(args.res_f, 'w') as writer:
+                    for feature in features:
+                        writer.write(feature+'\n')
             reward = ndcg - last_ndcg
             last_ndcg = ndcg
             rewards.append(reward)
@@ -145,7 +133,8 @@ def main():
     parser.add_argument('-embed', type=str, default='./data/glove.6B.300d.txt')
     parser.add_argument('-vocab_size', type=int, default=400002)
     parser.add_argument('-embed_dim', type=int, default=300)
-    parser.add_argument('-res', type=str, default='./results/cknrm_out.trec')
+    parser.add_argument('-res', type=str, default='./results/cknrm.trec')
+    parser.add_argument('-res_f', type=str, default='./results/cknrm_features')
     parser.add_argument('-depth', type=int, default=20)
     parser.add_argument('-gamma', type=float, default=0.99)
     parser.add_argument('-T', type=int, default=4)
