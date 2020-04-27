@@ -1,6 +1,5 @@
 import argparse
 
-import numpy as np
 import torch
 from torch import nn, optim
 from torch.autograd import Variable
@@ -131,6 +130,8 @@ def train(args, policy, p_optim, model, m_optim, crit, word2vec, tokenizer, dev_
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('-mode', type=str, default='train')
+    parser.add_argument('-checkpoint' type=str, default=None)
     parser.add_argument('-train', type=str, default='../data/triples.train.small.tsv')
     parser.add_argument('-dev', type=str, default='../data/dev_toy.tsv')
     parser.add_argument('-qrels', type=str, default='../data/qrels_toy')
@@ -179,7 +180,18 @@ def main():
         model = nn.DataParallel(model)
         crit = nn.DataParallel(crit)
 
-    train(args, policy, p_optim, model, m_optim, crit, word2vec, tokenizer, dev_data, device)
+    if args.mode == 'train':
+        train(args, policy, p_optim, model, m_optim, crit, word2vec, tokenizer, dev_data, device)
+    elif args.mode == 'infer':
+        assert args.checkpoint is not None
+        state_dict=torch.load(args.checkpoint)
+        model.load_state_dict(state_dict)
+        ndcg, features = dev(args, model, dev_data, device)
+        with open(args.res_f, 'w') as writer:
+            for feature in features:
+                writer.write(feature+'\n')
+    else:
+        print('mode must be train or infer!')
 
 if __name__ == "__main__":
     main()
