@@ -47,7 +47,7 @@ def dev(args, model, dev_data, device):
 
     m_ndcg = ndcg(args.qrels, args.res, args.depth)
     m_err = err(args.qrels, args.res, args.depth)
-    measure = [m_ndcg, m_err]
+    measure = (m_ndcg, m_err)
     return measure, features
 
 def train(args, policy, p_optim, model, m_optim, crit, word2vec, dev_data, device):
