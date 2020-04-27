@@ -147,7 +147,7 @@ def main():
     p_optim = torch.optim.Adam(filter(lambda p: p.requires_grad, policy.parameters()), lr=1e-4)
 
     # init model
-    cnofig = BertConfig.from_pretrained(args.model)
+    config = BertConfig.from_pretrained(args.model)
     model = BertForRanking.from_pretrained(args.model, config=config)
     model.to(device)
 
