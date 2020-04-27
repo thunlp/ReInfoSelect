@@ -46,7 +46,7 @@ def dev(args, model, dev_data, device):
                 writer.write(q_id+' '+'Q0'+' '+str(value[2])+' '+str(rank+1)+' '+str(value[1])+' Conv-KNRM\n')
 
     ndcg = cal_ndcg(args.qrels, args.res, args.depth)
-    return m_ndcg, features
+    return ndcg, features
 
 def train(args, policy, p_optim, model, m_optim, crit, word2vec, dev_data, device):
     best_ndcg = 0.0
