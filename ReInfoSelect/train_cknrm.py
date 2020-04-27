@@ -129,7 +129,7 @@ def train(args, policy, p_optim, model, m_optim, crit, word2vec, dev_data, devic
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-mode', type=str, default='train')
-    parser.add_argument('-checkpoint' type=str, default=None)
+    parser.add_argument('-checkpoint', type=str, default=None)
     parser.add_argument('-train', type=str, default='../data/triples.train.small.tsv')
     parser.add_argument('-dev', type=str, default='../data/dev_toy.tsv')
     parser.add_argument('-qrels', type=str, default='../data/qrels_toy')
