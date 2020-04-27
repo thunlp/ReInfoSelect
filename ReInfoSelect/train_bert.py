@@ -69,7 +69,7 @@ def train(args, policy, p_optim, model, m_optim, crit, word2vec, tokenizer, dev_
                 continue
 
             mask = action.ge(0.5)
-            weights = Variable(action, requires_grad=False).cuda()
+            weights = Variable(action, requires_grad=False).float().cuda()
             log_prob_p = dist.log_prob(action)
             log_prob_n = dist.log_prob(1-action)
             log_prob_ps.append(torch.masked_select(log_prob_p, mask))
