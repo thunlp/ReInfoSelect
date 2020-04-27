@@ -52,12 +52,12 @@ docker build -t reinfoselect_official:v0.1 .
 
 ## data
 ```
-cd data/
+cd data
 wget http://nlp.stanford.edu/data/glove.6B.zip
 unzip glove.6B.zip
 wget https://msmarco.blob.core.windows.net/msmarcoranking/triples.train.small.tar.gz
 tar -zxvf triples.train.small.tar.gz
-cd ../ReInfoSelect/
+cd ..
 ```
 
 ## Run
@@ -65,17 +65,17 @@ First, please prepare your data in recommended [format](./data).
 
 For Conv-KNRM,
 ```
-bash ./train_cknrm.sh
+bash train_cknrm.sh
 ```
 
 and for BERT,
 ```
-bash ./train_bert.sh
+bash train_bert.sh
 ```
 
 Finally, concatenate the neural features with SDM score and run Coor-Ascent using [RankLib](https://sourceforge.net/p/lemur/wiki/RankLib/).
 ```
-java -jar RankLib-2.1-patched.jar -train results/bert_out.trec -ranker 4 -kcv 5 -kcvmd results/ -kcvmn ca -metric2t ndcg@20
+bash coor_ascent.sh
 ```
 
 ## Citation
