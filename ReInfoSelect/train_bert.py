@@ -28,7 +28,7 @@ def dev(args, model, dev_data, device):
         d_scores = doc_scores.detach().cpu().tolist()
         d_features = doc_features.detach().cpu().tolist()
 
-        for (q_id, d_id, qd_s, d_s) in zip(query_id, doc_id, qd_score, d_scores, d_features):
+        for (q_id, d_id, qd_s, d_s, d_f) in zip(query_id, doc_id, qd_score, d_scores, d_features):
             feature = []
             feature.append(str(qd_s))
             feature.append('id:' + q_id)
@@ -51,7 +51,7 @@ def dev(args, model, dev_data, device):
 
 def train(args, policy, p_optim, model, m_optim, crit, word2vec, tokenizer, dev_data, device):
     best_ndcg = 0.0
-    for i_episode in range(args.epoch):
+    for ep in range(args.epoch):
         # train data
         train_data = bert_train_dataloader(args, word2vec, tokenizer)
         ndcg, features = dev(args, model, dev_data, device)
