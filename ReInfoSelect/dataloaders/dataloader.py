@@ -5,20 +5,18 @@ from torch import nn
 from nltk.corpus import stopwords
 from krovetzstemmer import Stemmer
 
+sws = {}
+for w in stopwords.words('english'):
+    sws[w] = 1
 def stopword_removal(toks):
-    sws = {}
-    for w in stopwords.words('english'):
-        sws[w] = 1 
-
     toks_filtered = []
     for w in toks:
         if w not in sws:
             toks_filtered.append(w)
     return toks_filtered
 
+stemmer = Stemmer()
 def stemming(toks):
-    stemmer = Stemmer()
-
     toks_stemmed = []
     for tok in toks:
         tok = stemmer.stem(tok)
