@@ -31,8 +31,6 @@ def err(qrels, trec, k):
     for r in res:
         score = r
     score = score.strip('\n').split(',')
-    #ndcg = float(scores[2])
-    print(score)
     err = float(score[3])
 
     return err

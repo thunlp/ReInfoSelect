@@ -47,19 +47,21 @@ def dev(args, model, dev_data, device):
             for rank, value in enumerate(res):
                 writer.write(q_id+' '+'Q0'+' '+str(value[2])+' '+str(rank+1)+' '+str(value[1])+' bert\n')
 
-    m_ndcg = ndcg(args.qrels, args.res, args.depth)
-    m_err = err(args.qrels, args.res, args.depth)
-    measure = (m_ndcg, m_err)
-    return measure, features
+    ndcg = ndcg(args.qrels, args.res, args.depth)
+    return ndcg, features
 
 def train(args, policy, p_optim, model, m_optim, crit, word2vec, tokenizer, dev_data, device):
     best_ndcg = 0.0
     for i_episode in range(args.epoch):
         # train data
         train_data = bert_train_dataloader(args, word2vec, tokenizer)
-        ndcg, err = dev(args, model, dev_data, device)
+        ndcg, features = dev(args, model, dev_data, device)
+        print('init_ndcg: ' + str(ndcg))
         if ndcg > best_ndcg:
             best_ndcg = ndcg
+            with open(args.res_f, 'w') as writer:
+                for feature in features:
+                    writer.write(feature+'\n')
         last_ndcg = ndcg
 
         log_prob_ps = []
@@ -93,7 +95,8 @@ def train(args, policy, p_optim, model, m_optim, crit, word2vec, tokenizer, dev_
             m_optim.step()
             m_optim.zero_grad()
 
-            (ndcg, err), features = dev(args, model, dev_data, device)
+            ndcg, features = dev(args, model, dev_data, device)
+            print('epoch: ' + str(ep+1) + ', step: ' + str(step+1) + ', ndcg: ' + str(last_ndcg) + ', best_ndcg: ' + str(best_ndcg))
             if ndcg > best_ndcg:
                 best_ndcg = ndcg
                 with open(args.res_f, 'w') as writer:
