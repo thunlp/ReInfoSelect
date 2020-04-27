@@ -1,6 +1,6 @@
 CUDA_VISIBLE_DEVICES=0 \
 python train_cknrm.py \
-        -mode train
+        -mode train \
         -train ../data/triples.train.small.tsv \
         -dev ../data/dev_toy.tsv \
         -qrels ../data/qrels_toy \
