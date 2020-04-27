@@ -11,7 +11,9 @@ class BertForRanking(BertPreTrainedModel):
 
         self.init_weights()
 
-    def forward(self, input_ids, attention_mask=None, token_type_ids=None):
+    def forward(self, input_ids, attention_mask=None, token_type_ids=None, raw_score=None):
         output = self.bert(input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
         score = self.dense(output[1]).squeeze(-1)
+        if raw_score is not None:
+            output[1] = torch.cat([output[1], raw_score.unsqueeze(1)], 1)
         return score, output[1]

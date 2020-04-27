@@ -54,8 +54,7 @@ class cknrm(nn.Module):
             nn.ReLU()
         )
 
-        feature_dim = args.n_kernels * 9
-        self.dense = nn.Linear(feature_dim, 1)
+        self.dense = nn.Linear(args.n_kernels*9, 1)
 
     def get_intersect_matrix(self, q_embed, d_embed, atten_q, atten_d):
         sim = torch.bmm(q_embed, d_embed).view(q_embed.size()[0], q_embed.size()[1], d_embed.size()[2], 1)
@@ -73,7 +72,7 @@ class cknrm(nn.Module):
         mask = torch.autograd.Variable(mask, requires_grad=False)
         return mask
 
-    def forward(self, query_idx, doc_idx, query_len, doc_len):
+    def forward(self, query_idx, doc_idx, query_len, doc_len, raw_score=None):
         qw_embed = self.embedding(query_idx)
         dw_embed = self.embedding(doc_idx)
         inputs_qwm = self.create_mask_like(query_len, qw_embed)
@@ -112,4 +111,6 @@ class cknrm(nn.Module):
         log_pooling_sum = torch.cat([log_pooling_sum_wwuu, log_pooling_sum_wwut, log_pooling_sum_wwub, log_pooling_sum_wwbu, log_pooling_sum_wwtu,\
             log_pooling_sum_wwbb, log_pooling_sum_wwbt, log_pooling_sum_wwtb, log_pooling_sum_wwtt], 1)
         score = self.dense(log_pooling_sum).squeeze(-1)
+        if raw_score is not None:
+            log_pooling_sum = torch.cat([log_pooling_sum, raw_score.unsqueeze(1)], 1)
         return score, log_pooling_sum
