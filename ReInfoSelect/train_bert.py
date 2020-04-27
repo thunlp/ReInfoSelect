@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from torch import nn, optim
 from torch.autograd import Variable
+from torch.distributions import Categorical
 
 from transformers import *
 
