@@ -149,7 +149,7 @@ def main():
     dev_data = dev_dataloader(args, word2vec)
 
     # loss function
-    crit = nn.MarginRankingLoss(margin=1, size_average=True)
+    crit = nn.MarginRankingLoss(margin=1, reduction='mean')
     crit.to(device)
 
     if torch.cuda.device_count() > 1:
