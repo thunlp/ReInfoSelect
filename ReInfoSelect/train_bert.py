@@ -96,7 +96,7 @@ def train(args, policy, p_optim, model, m_optim, crit, word2vec, tokenizer, dev_
                 policy_loss = []
                 returns = []
                 for ri in reversed(range(len(rewards))):
-                    R = rewards[ri] + gamma * R
+                    R = rewards[ri] + args.gamma * R
                     if R > 0:
                         log_probs.insert(0, log_prob_ps[ri])
                         returns.insert(0, R)
