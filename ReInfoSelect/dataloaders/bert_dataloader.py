@@ -1,30 +1,6 @@
 import numpy as np
 import torch
 from torch import nn
-from torch.utils.data import TensorDataset
-
-class trainFeatures(object):
-    def __init__(self, query_idx, doc_idx, query_len, doc_len, p_input_ids, p_input_mask, p_segment_ids, n_input_ids, n_input_mask, n_segment_ids):
-        self.query_idx = query_idx
-        self.doc_idx = doc_idx
-        self.query_len = query_len
-        self.doc_len = doc_len
-        self.p_input_ids = p_input_ids
-        self.p_input_mask = p_input_mask
-        self.p_segment_ids = p_segment_ids
-        self.n_input_ids = n_input_ids
-        self.n_input_mask = n_input_mask
-        self.n_segment_ids = n_segment_ids
-
-class devFeatures(object):
-    def __init__(self, query_id, doc_id, qd_score, raw_score, d_input_ids, d_input_mask, d_segment_ids):
-        self.query_id = query_id
-        self.doc_id = doc_id
-        self.qd_score = qd_score
-        self.raw_score = raw_score
-        self.d_input_ids = d_input_ids
-        self.d_input_mask = d_input_mask
-        self.d_segment_ids = d_segment_ids
 
 def pack_bert_seq(q_tokens, p_tokens, tokenizer, max_seq_length):
     tokens = []
@@ -110,17 +86,17 @@ def read_train_to_features(args, word2idx, tokenizer):
             p_input_ids, p_input_mask, p_segment_ids = pack_bert_seq(q_tokens, p_tokens, tokenizer, 384)
             n_input_ids, n_input_mask, n_segment_ids = pack_bert_seq(q_tokens, n_tokens, tokenizer, 384)
 
-            features.append(trainFeatures(
-                query_idx = query_idx,
-                doc_idx = pos_idx,
-                query_len = query_len,
-                doc_len = pos_len,
-                p_input_ids = p_input_ids,
-                p_input_mask = p_input_mask,
-                p_segment_ids = p_segment_ids,
-                n_input_ids = n_input_ids,
-                n_input_mask = n_input_mask,
-                n_segment_ids = n_segment_ids))
+            features.append({
+                'query_idx': query_idx,
+                'doc_idx': pos_idx,
+                'query_len': query_len,
+                'doc_len': pos_len,
+                'p_input_ids': p_input_ids,
+                'p_input_mask': p_input_mask,
+                'p_segment_ids': p_segment_ids,
+                'n_input_ids': n_input_ids,
+                'n_input_mask': n_input_mask,
+                'n_segment_ids': n_segment_ids})
         return features
 
 def read_dev_to_features(args, tokenizer):
@@ -160,14 +136,14 @@ def read_dev_to_features(args, tokenizer):
 
             d_input_ids, d_input_mask, d_segment_ids = pack_bert_seq(q_tokens, d_tokens, tokenizer, 384)
 
-            features.append(devFeatures(
-                query_id = query_id,
-                doc_id = doc_id,
-                qd_score = qd_score,
-                raw_score = raw_score,
-                d_input_ids = d_input_ids,
-                d_input_mask = d_input_mask,
-                d_segment_ids = d_segment_ids))
+            features.append({
+                'query_id': query_id,
+                'doc_id': doc_id,
+                'label': label,
+                'retrieval_score': retrieval_score,
+                'd_input_ids': d_input_ids,
+                'd_input_mask': d_input_mask,
+                'd_segment_ids': d_segment_ids})
         return features
 
 def bert_train_dataloader(args, word2idx, tokenizer, shuffle=True):
@@ -180,16 +156,16 @@ def bert_train_dataloader(args, word2idx, tokenizer, shuffle=True):
     for start_idx in range(0, n_samples, args.batch_size):
         batch_idx = idx[start_idx:start_idx+args.batch_size]
 
-        query_idx = [torch.tensor(features[i].query_idx, dtype=torch.long) for i in batch_idx]
-        doc_idx = [torch.tensor(features[i].doc_idx, dtype=torch.long) for i in batch_idx]
-        query_len = torch.tensor([features[i].query_len for i in batch_idx], dtype=torch.long)
-        doc_len = torch.tensor([features[i].doc_len for i in batch_idx], dtype=torch.long)
-        p_input_ids = torch.tensor([features[i].p_input_ids for i in batch_idx], dtype=torch.long)
-        p_input_mask = torch.tensor([features[i].p_input_mask for i in batch_idx], dtype=torch.long)
-        p_segment_ids = torch.tensor([features[i].p_segment_ids for i in batch_idx], dtype=torch.long)
-        n_input_ids = torch.tensor([features[i].n_input_ids for i in batch_idx], dtype=torch.long)
-        n_input_mask = torch.tensor([features[i].n_input_mask for i in batch_idx], dtype=torch.long)
-        n_segment_ids = torch.tensor([features[i].n_segment_ids for i in batch_idx], dtype=torch.long)
+        query_idx = [torch.tensor(features[i]['query_idx'], dtype=torch.long) for i in batch_idx]
+        doc_idx = [torch.tensor(features[i]['doc_idx'], dtype=torch.long) for i in batch_idx]
+        query_len = torch.tensor([features[i]['query_len'] for i in batch_idx], dtype=torch.long)
+        doc_len = torch.tensor([features[i]['doc_len'] for i in batch_idx], dtype=torch.long)
+        p_input_ids = torch.tensor([features[i]['p_input_ids'] for i in batch_idx], dtype=torch.long)
+        p_input_mask = torch.tensor([features[i]['p_input_mask'] for i in batch_idx], dtype=torch.long)
+        p_segment_ids = torch.tensor([features[i]['p_segment_ids'] for i in batch_idx], dtype=torch.long)
+        n_input_ids = torch.tensor([features[i]['n_input_ids'] for i in batch_idx], dtype=torch.long)
+        n_input_mask = torch.tensor([features[i]['n_input_mask'] for i in batch_idx], dtype=torch.long)
+        n_segment_ids = torch.tensor([features[i]['n_segment_ids'] for i in batch_idx], dtype=torch.long)
 
         query_idx = nn.utils.rnn.pad_sequence(query_idx, batch_first=True)
         doc_idx = nn.utils.rnn.pad_sequence(doc_idx, batch_first=True)
@@ -206,14 +182,14 @@ def bert_dev_dataloader(args, tokenizer):
     for start_idx in range(0, n_samples, args.batch_size):
         batch_idx = idx[start_idx:start_idx+args.batch_size]
 
-        query_id = [features[i].query_id for i in batch_idx]
-        doc_id = [features[i].doc_id for i in batch_idx]
-        qd_score = [features[i].qd_score for i in batch_idx]
-        raw_score = torch.tensor([features[i].raw_score for i in batch_idx], dtype=torch.float)
-        d_input_ids = torch.tensor([features[i].d_input_ids for i in batch_idx], dtype=torch.long)
-        d_input_mask = torch.tensor([features[i].d_input_mask for i in batch_idx], dtype=torch.long)
-        d_segment_ids = torch.tensor([features[i].d_segment_ids for i in batch_idx], dtype=torch.long)
+        query_id = [features[i]['query_id'] for i in batch_idx]
+        doc_id = [features[i]['doc_id'] for i in batch_idx]
+        label = [features[i]['label'] for i in batch_idx]
+        retrieval_score = torch.tensor([features[i]['retrieval_score'] for i in batch_idx], dtype=torch.float)
+        d_input_ids = torch.tensor([features[i]['d_input_ids'] for i in batch_idx], dtype=torch.long)
+        d_input_mask = torch.tensor([features[i]['d_input_mask'] for i in batch_idx], dtype=torch.long)
+        d_segment_ids = torch.tensor([features[i]['d_segment_ids'] for i in batch_idx], dtype=torch.long)
 
-        batch = (query_id, doc_id, qd_score, raw_score, d_input_ids, d_input_mask, d_segment_ids)
+        batch = (query_id, doc_id, label, retrieval_score, d_input_ids, d_input_mask, d_segment_ids)
         batches.append(batch)
     return batches

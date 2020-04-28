@@ -2,56 +2,6 @@ import numpy as np
 import torch
 from torch import nn
 
-from nltk.corpus import stopwords
-from krovetzstemmer import Stemmer
-
-sws = {}
-for w in stopwords.words('english'):
-    sws[w] = 1
-def stopword_removal(toks):
-    toks_filtered = []
-    for w in toks:
-        if w not in sws:
-            toks_filtered.append(w)
-    return toks_filtered
-
-stemmer = Stemmer()
-def stemming(toks):
-    toks_stemmed = []
-    for tok in toks:
-        tok = stemmer.stem(tok)
-        toks_stemmed.append(tok)
-    return toks_stemmed
-
-class trainFeatures(object):
-    def __init__(self, query_idx, pos_idx, neg_idx, query_len, pos_len, neg_len):
-        self.query_idx = query_idx
-        self.pos_idx = pos_idx
-        self.neg_idx = neg_idx
-        self.query_len = query_len
-        self.pos_len = pos_len
-        self.neg_len = neg_len
-
-class devFeatures(object):
-    def __init__(self, query_id, doc_id, qd_score, raw_score, query_idx, doc_idx, query_len, doc_len):
-        self.query_id = query_id
-        self.doc_id = doc_id
-        self.qd_score = qd_score
-       	self.raw_score = raw_score
-        self.query_idx = query_idx
-        self.doc_idx = doc_idx
-        self.query_len = query_len
-        self.doc_len = doc_len
-
-def tok2idx(toks, word2idx):
-    input_ids = []
-    for tok in toks:
-        if tok in word2idx:
-            input_ids.append(word2idx[tok])
-        else:
-            input_ids.append(word2idx['<UNK>'])
-    return input_ids
-
 def read_train_to_features(args, word2idx):
     with open(args.train, 'r') as reader:
         features = []
@@ -89,13 +39,13 @@ def read_train_to_features(args, word2idx):
             pos_idx = tok2idx(pos_toks, word2idx)
             neg_idx = tok2idx(neg_toks, word2idx)
 
-            features.append(trainFeatures(
-                query_idx = query_idx,
-                pos_idx = pos_idx,
-                neg_idx = neg_idx,
-                query_len = query_len,
-                pos_len = pos_len,
-                neg_len = neg_len))
+            features.append({
+                'query_idx': query_idx,
+                'pos_idx': pos_idx,
+                'neg_idx': neg_idx,
+                'query_len': query_len,
+                'pos_len': pos_len,
+                'neg_len': neg_len})
         return features
 
 def read_dev_to_features(args, word2idx):
@@ -106,10 +56,10 @@ def read_dev_to_features(args, word2idx):
 
             query_toks = s[0].split()
             doc_toks = s[1].split()
-            qd_score = int(s[2])
+            label = int(s[2])
             query_id = s[3]
             doc_id = s[4]
-            raw_score = float(s[5])
+            retrieval_score = float(s[5])
 
             query_toks = stopword_removal(query_toks)
             doc_toks = stopword_removal(doc_toks)
@@ -131,15 +81,15 @@ def read_dev_to_features(args, word2idx):
             query_idx = tok2idx(query_toks, word2idx)
             doc_idx = tok2idx(doc_toks, word2idx)
 
-            features.append(devFeatures(
-                query_id = query_id,
-                doc_id = doc_id,
-                qd_score = qd_score,
-                raw_score = raw_score,
-                query_idx = query_idx,
-                doc_idx = doc_idx,
-                query_len = query_len,
-                doc_len = doc_len))
+            features.append({
+                'query_id': query_id,
+                'doc_id': doc_id,
+                'label': label,
+                'retrieval_score': retrieval_score,
+                'query_idx': query_idx,
+                'doc_idx': doc_idx,
+                'query_len': query_len,
+                'doc_len': doc_len})
         return features
 
 def train_dataloader(args, tokenizer, shuffle=True):
@@ -152,12 +102,12 @@ def train_dataloader(args, tokenizer, shuffle=True):
     for start_idx in range(0, n_samples, args.batch_size):
         batch_idx = idx[start_idx:start_idx+args.batch_size]
 
-        query_idx = [torch.tensor(features[i].query_idx, dtype=torch.long) for i in batch_idx]
-        pos_idx = [torch.tensor(features[i].pos_idx, dtype=torch.long) for i in batch_idx]
-        neg_idx = [torch.tensor(features[i].neg_idx, dtype=torch.long) for i in batch_idx]
-        query_len = torch.tensor([features[i].query_len for i in batch_idx], dtype=torch.long)
-        pos_len = torch.tensor([features[i].pos_len for i in batch_idx], dtype=torch.long)
-        neg_len = torch.tensor([features[i].neg_len for i in batch_idx], dtype=torch.long)
+        query_idx = [torch.tensor(features[i]['query_idx'], dtype=torch.long) for i in batch_idx]
+        pos_idx = [torch.tensor(features[i]['pos_idx'], dtype=torch.long) for i in batch_idx]
+        neg_idx = [torch.tensor(features[i]['neg_idx'], dtype=torch.long) for i in batch_idx]
+        query_len = torch.tensor([features[i]['query_len'] for i in batch_idx], dtype=torch.long)
+        pos_len = torch.tensor([features[i]['pos_len'] for i in batch_idx], dtype=torch.long)
+        neg_len = torch.tensor([features[i]['neg_len'] for i in batch_idx], dtype=torch.long)
 
         query_idx = nn.utils.rnn.pad_sequence(query_idx, batch_first=True)
         pos_idx = nn.utils.rnn.pad_sequence(pos_idx, batch_first=True)
@@ -175,18 +125,18 @@ def dev_dataloader(args, tokenizer):
     for start_idx in range(0, n_samples, args.batch_size):
         batch_idx = idx[start_idx:start_idx+args.batch_size]
 
-        query_id = [features[i].query_id for i in batch_idx]
-        doc_id = [features[i].doc_id for i in batch_idx]
-        qd_score = [features[i].qd_score for i in batch_idx]
-        raw_score = torch.tensor([features[i].raw_score for i in batch_idx], dtype=torch.float)
-        query_idx = [torch.tensor(features[i].query_idx, dtype=torch.long) for i in batch_idx]
-        doc_idx = [torch.tensor(features[i].doc_idx, dtype=torch.long) for i in batch_idx]
-        query_len = torch.tensor([features[i].query_len for i in batch_idx], dtype=torch.long)
-        doc_len = torch.tensor([features[i].doc_len for i in batch_idx], dtype=torch.long)
+        query_id = [features[i]['query_id'] for i in batch_idx]
+        doc_id = [features[i]['doc_id'] for i in batch_idx]
+        label = [features[i]['label'] for i in batch_idx]
+        retrieval_score = torch.tensor([features[i]['retireval_score'] for i in batch_idx], dtype=torch.float)
+        query_idx = [torch.tensor(features[i]['query_idx'], dtype=torch.long) for i in batch_idx]
+        doc_idx = [torch.tensor(features[i]['doc_idx'], dtype=torch.long) for i in batch_idx]
+        query_len = torch.tensor([features[i]['query_len'] for i in batch_idx], dtype=torch.long)
+        doc_len = torch.tensor([features[i]['doc_len'] for i in batch_idx], dtype=torch.long)
 
         query_idx = nn.utils.rnn.pad_sequence(query_idx, batch_first=True)
         doc_idx = nn.utils.rnn.pad_sequence(doc_idx, batch_first=True)
 
-        batch = (query_id, doc_id, qd_score, raw_score, query_idx, doc_idx, query_len, doc_len)
+        batch = (query_id, doc_id, label, retrieval_score, query_idx, doc_idx, query_len, doc_len)
         batches.append(batch)
     return batches

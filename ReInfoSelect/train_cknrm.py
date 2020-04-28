@@ -5,7 +5,7 @@ from torch import nn
 from torch.autograd import Variable
 from torch.distributions import Categorical
 
-from policy import all_policy
+from policies import all_policy
 from dataloaders import *
 from models import cknrm
 from metrics import *
@@ -16,26 +16,26 @@ def dev(args, model, dev_data, device):
     for s, batch in enumerate(dev_data):
         query_id = batch[0]
         doc_id = batch[1]
-        qd_score = batch[2]
+        label = batch[2]
         batch = tuple(t.to(device) for t in batch[3:])
-        (raw_score, query_idx, doc_idx, query_len, doc_len) = batch
+        (retrieval_score, query_idx, doc_idx, query_len, doc_len) = batch
 
         with torch.no_grad():
-            doc_scores, doc_features = model(query_idx, doc_idx, query_len, doc_len, raw_score)
+            doc_scores, doc_features = model(query_idx, doc_idx, query_len, doc_len, retrieval_score)
         d_scores = doc_scores.detach().cpu().tolist()
         d_features = doc_features.detach().cpu().tolist()
 
-        for (q_id, d_id, qd_s, d_s, d_f) in zip(query_id, doc_id, qd_score, d_scores, d_features):
+        for (q_id, d_id, l_s, d_s, d_f) in zip(query_id, doc_id, label, d_scores, d_features):
             feature = []
-            feature.append(str(qd_s))
+            feature.append(str(l_s))
             feature.append('id:' + q_id)
             for i, fi in enumerate(d_f):
                 feature.append(str(i+1) + ':' + str(fi))
             features.append(' '.join(feature))
             if q_id in rst_dict:
-                rst_dict[q_id].append((qd_s, d_s, d_id))
+                rst_dict[q_id].append((l_s, d_s, d_id))
             else:
-                rst_dict[q_id] = [(qd_s, d_s, d_id)]
+                rst_dict[q_id] = [(l_s, d_s, d_id)]
 
     with open(args.res, 'w') as writer:
         for q_id, scores in rst_dict.items():
