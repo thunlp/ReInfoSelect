@@ -63,22 +63,22 @@ cd ..
 ## Run
 First, please prepare your data in recommended [format](./data).
 
-For Conv-KNRM,
+For cknrm training, set *-model* to *cknrm*, for bert training, set to *bert*.
 ```
-bash train_cknrm.sh
-```
-
-and for BERT,
-```
-bash train_bert.sh
+bash train.sh
 ```
 
-Finally, concatenate the neural features with SDM score and run Coor-Ascent using [RankLib](https://sourceforge.net/p/lemur/wiki/RankLib/).
+Then, concatenate the neural features with retrieval (SDM or BM25) score and run Coor-Ascent using [RankLib](https://sourceforge.net/p/lemur/wiki/RankLib/).
 ```
 bash coor_ascent.sh
 ```
 
-You can change the mode from *train* to *infer* and add *-checkpoint* in *train_cknrm.sh* or *train_bert.sh* for inference.
+You can change *-mode* from *train* to *infer* and add *-checkpoint* in *train_cknrm.sh* or *train_bert.sh* for inference.
+
+For ensemble:
+```
+bash ensemble.sh
+```
 
 ## Citation
 Please cite our paper if you find it helpful.
