@@ -26,7 +26,7 @@ def cal_ndcg(qrels, trec, k):
     return ndcg
 
 def cal_err(qrels, trec, k):
-    res = os.popen('./gdeval.pl -k %d %s %s' % (k, qrels, trec))
+    res = os.popen('./utils/gdeval.pl -k %d %s %s' % (k, qrels, trec))
     score = ''
     for r in res:
         score = r
