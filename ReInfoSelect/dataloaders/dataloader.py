@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from torch import nn
 
-def read_train_to_features(args, word2idx):
+def read_train_to_features(args, tokenizer):
     with open(args.train, 'r') as reader:
         features = []
         for line in reader:
@@ -108,7 +108,7 @@ def dev_dataloader(args, tokenizer):
         query_id = [features[i]['query_id'] for i in batch_idx]
         doc_id = [features[i]['doc_id'] for i in batch_idx]
         label = [features[i]['label'] for i in batch_idx]
-        retrieval_score = torch.tensor([features[i]['retireval_score'] for i in batch_idx], dtype=torch.float)
+        retrieval_score = torch.tensor([features[i]['retrieval_score'] for i in batch_idx], dtype=torch.float)
         query_idx = [torch.tensor(features[i]['query_idx'], dtype=torch.long) for i in batch_idx]
         doc_idx = [torch.tensor(features[i]['doc_idx'], dtype=torch.long) for i in batch_idx]
         query_len = torch.tensor([features[i]['query_len'] for i in batch_idx], dtype=torch.long)
