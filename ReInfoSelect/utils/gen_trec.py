@@ -5,13 +5,15 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-dev', type=str, default='../data/dev_toy.tsv')
     parser.add_argument('-res', type=str, default='../results/cknrm.trec')
+    parser.add_argument('-k', type=int, default=2)
     args = parser.parse_args()
 
     score_dic = {}
-    with open('f1.score', 'r') as r:
-        for line in r:
-            line = line.strip('\n').split('\t')
-            score_dic[line[0] + '$' + line[1]] = line[2]
+    for i in range(args.k):
+        with open('f' + str(i+1) + '.score', 'r') as r:
+            for line in r:
+                line = line.strip('\n').split('\t')
+                score_dic[line[0] + '$' + line[1]] = line[2]
 
     outs = {}
     with open(args.dev, 'r') as r:
