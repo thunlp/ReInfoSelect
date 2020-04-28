@@ -9,7 +9,7 @@ python train_bert.py \
         -vocab_size 400002 \
         -embed_dim 300 \
         -res ../results/bert.trec \
-        -res_f bert_features \
+        -res_f ../features/bert_features \
         -depth 20 \
         -gamma 0.99 \
         -T 4 \

@@ -140,7 +140,7 @@ def main():
     parser.add_argument('-vocab_size', type=int, default=400002)
     parser.add_argument('-embed_dim', type=int, default=300)
     parser.add_argument('-res', type=str, default='../results/bert.trec')
-    parser.add_argument('-res_f', type=str, default='../results/bert_features')
+    parser.add_argument('-res_f', type=str, default='../features/bert_features')
     parser.add_argument('-depth', type=int, default=20)
     parser.add_argument('-gamma', type=float, default=0.99)
     parser.add_argument('-T', type=int, default=4)
