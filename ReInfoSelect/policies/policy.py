@@ -6,7 +6,7 @@ from models import cknrm
 
 class Policy(nn.Module):
     def __init__(self, args, embedding_init=None):
-        super(all_policy, self).__init__()
+        super(Policy, self).__init__()
         self.embedding = nn.Embedding(args.vocab_size, args.embed_dim)
         if embedding_init is not None:
             em = torch.tensor(embedding_init, dtype=torch.float32)

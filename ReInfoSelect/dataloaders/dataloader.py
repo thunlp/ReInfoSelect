@@ -8,36 +8,24 @@ def read_train_to_features(args, word2idx):
         for line in reader:
             s = line.strip('\n').split('\t')
 
-            query_toks = s[0].split()
-            pos_toks = s[1].split()
-            neg_toks = s[2].split()
-
-            query_toks = stopword_removal(query_toks)
-            pos_toks = stopword_removal(pos_toks)
-            neg_toks = stopword_removal(neg_toks)
-
-            query_toks = stemming(query_toks)
-            pos_toks = stemming(pos_toks)
-            neg_toks = stemming(neg_toks)
-
-            query_toks = query_toks[:args.max_query_len]
-            pos_toks = pos_toks[:args.max_seq_len]
-            neg_toks = neg_toks[:args.max_seq_len]
+            query_toks = tokenizer.tokenize(s[0])[:args.max_query_len]
+            pos_toks = tokenizer.tokenize(s[1])[:args.max_seq_len]
+            neg_toks = tokenizer.tokenize(s[2])[:args.max_seq_len]
 
             query_len = len(query_toks)
             pos_len = len(pos_toks)
             neg_len = len(neg_toks)
 
             while len(query_toks) < args.max_query_len:
-                query_toks.append('<PAD>')
+                query_toks.append(tokenizer.pad)
             while len(pos_toks) < args.max_seq_len:
-                pos_toks.append('<PAD>')
+                pos_toks.append(tokenizer.pad)
             while len(neg_toks) < args.max_seq_len:
-                neg_toks.append('<PAD>')
+                neg_toks.append(tokenizer.pad)
 
-            query_idx = tok2idx(query_toks, word2idx)
-            pos_idx = tok2idx(pos_toks, word2idx)
-            neg_idx = tok2idx(neg_toks, word2idx)
+            query_idx = tokenizer.convert_tokens_to_ids(query_toks)
+            pos_idx = tokenizer.convert_tokens_to_ids(pos_toks)
+            neg_idx = tokenizer.convert_tokens_to_ids(neg_toks)
 
             features.append({
                 'query_idx': query_idx,
@@ -48,38 +36,30 @@ def read_train_to_features(args, word2idx):
                 'neg_len': neg_len})
         return features
 
-def read_dev_to_features(args, word2idx):
+def read_dev_to_features(args, tokenizer):
     with open(args.dev, 'r') as reader:
         features = []
         for line in reader:
             s = line.strip('\n').split('\t')
 
-            query_toks = s[0].split()
-            doc_toks = s[1].split()
             label = int(s[2])
             query_id = s[3]
             doc_id = s[4]
             retrieval_score = float(s[5])
 
-            query_toks = stopword_removal(query_toks)
-            doc_toks = stopword_removal(doc_toks)
-
-            query_toks = stemming(query_toks)
-            doc_toks = stemming(doc_toks)
-
-            query_toks = query_toks[:args.max_query_len]
-            doc_toks = doc_toks[:args.max_seq_len]
+            query_toks = tokenizer.tokenize(s[0])[:args.max_query_len]
+            doc_toks = tokenizer.tokenize(s[1])[:args.max_seq_len]
 
             query_len = len(query_toks)
             doc_len = len(doc_toks)
 
             while len(query_toks) < args.max_query_len:
-                query_toks.append('<PAD>')
+                query_toks.append(tokenizer.pad)
             while len(doc_toks) < args.max_seq_len:
-                doc_toks.append('<PAD>')
+                doc_toks.append(tokenizer.pad)
 
-            query_idx = tok2idx(query_toks, word2idx)
-            doc_idx = tok2idx(doc_toks, word2idx)
+            query_idx = tokenizer.convert_tokens_to_ids(query_toks)
+            doc_idx = tokenizer.convert_tokens_to_ids(doc_toks)
 
             features.append({
                 'query_id': query_id,

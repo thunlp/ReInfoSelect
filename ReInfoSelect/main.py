@@ -21,10 +21,16 @@ def dev(args, model, dev_data, device):
         doc_id = batch[1]
         label = batch[2]
         batch = tuple(t.to(device) for t in batch[3:])
-        (retrieval_score, d_input_ids, d_input_mask, d_segment_ids) = batch
-
-        with torch.no_grad():
-            doc_scores, doc_features = model(d_input_ids, d_input_mask, d_segment_ids, retrieval_score)
+        if args.model.lower() == 'bert':
+            (retrieval_score, d_input_ids, d_input_mask, d_segment_ids) = batch
+            with torch.no_grad():
+                doc_scores, doc_features = model(d_input_ids, d_input_mask, d_segment_ids, retrieval_score)
+        elif args.model.lower() == 'cknrm':
+            (retrieval_score, query_idx, doc_idx, query_len, doc_len) = batch
+            with torch.no_grad():
+                doc_scores, doc_features = model(query_idx, doc_idx, query_len, doc_len, retrieval_score)
+        else:
+            raise ('model must be bert or cknrm!')
         d_scores = doc_scores.detach().cpu().tolist()
         d_features = doc_features.detach().cpu().tolist()
 
@@ -53,7 +59,12 @@ def train(args, policy, p_optim, model, m_optim, crit, tokenizer, bert_tokenizer
     best_ndcg = 0.0
     for ep in range(args.epoch):
         # train data
-        train_data = bert_train_dataloader(args, tokenizer, bert_tokenizer)
+        if args.model.lower() == 'bert':
+            train_data = bert_train_dataloader(args, tokenizer, bert_tokenizer)
+        elif args.model.lower() == 'cknrm':
+            train_data = train_dataloader(args, tokenizer)
+        else:
+            raise ('model must be bert or cknrm!')
         ndcg, features = dev(args, model, dev_data, device)
         print('init_ndcg: ' + str(ndcg))
         if ndcg > best_ndcg:
@@ -70,7 +81,12 @@ def train(args, policy, p_optim, model, m_optim, crit, tokenizer, bert_tokenizer
         for step, batch in enumerate(train_data):
             # select action
             batch = tuple(t.to(device) for t in batch)
-            (query_idx, doc_idx, query_len, doc_len, p_input_ids, p_input_mask, p_segment_ids, n_input_ids, n_input_mask, n_segment_ids) = batch
+            if args.model.lower() == 'bert':
+                (query_idx, doc_idx, query_len, doc_len, p_input_ids, p_input_mask, p_segment_ids, n_input_ids, n_input_mask, n_segment_ids) = batch
+            elif args.model.lower() == 'cknrm':
+                (query_idx, doc_idx, neg_idx, query_len, doc_len, neg_len) = batch
+            else:
+                raise ('model must be bert or cknrm!')
 
             probs = policy(query_idx, doc_idx, query_len, doc_len)
             dist  = Categorical(probs)
@@ -85,8 +101,13 @@ def train(args, policy, p_optim, model, m_optim, crit, tokenizer, bert_tokenizer
             log_prob_ps.append(torch.masked_select(log_prob_p, mask))
             log_prob_ns.append(torch.masked_select(log_prob_n, mask))
 
-            p_scores, _ = model(p_input_ids, p_segment_ids, p_input_mask)
-            n_scores, _ = model(n_input_ids, n_segment_ids, n_input_mask)
+            if args.model.lower() == 'bert':
+                p_scores, _ = model(p_input_ids, p_segment_ids, p_input_mask)
+                n_scores, _ = model(n_input_ids, n_segment_ids, n_input_mask)
+            elif args.model.lower() == 'cknrm':
+                p_scores, _ = model(query_idx, doc_idx, query_len, doc_len)
+                n_scores, _ = model(query_idx, neg_idx, query_len, neg_len)
+
             label = torch.ones(p_scores.size()).to(device)
             batch_loss = crit(p_scores, n_scores, Variable(label, requires_grad=False))
             batch_loss = batch_loss.mul(weights).mean()
@@ -132,12 +153,13 @@ def train(args, policy, p_optim, model, m_optim, crit, tokenizer, bert_tokenizer
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-mode', type=str, default='train')
+    parser.add_argument('-model', type=str, default='bert')
     parser.add_argument('-checkpoint', type=str, default=None)
     parser.add_argument('-train', type=str, default='../data/triples.train.small.tsv')
     parser.add_argument('-dev', type=str, default='../data/dev_toy.tsv')
     parser.add_argument('-qrels', type=str, default='../data/qrels_toy')
     parser.add_argument('-embed', type=str, default='../data/glove.6B.300d.txt')
-    parser.add_argument('-model', type=str, default='bert-base-uncased')
+    parser.add_argument('-pretrain', type=str, default='bert-base-uncased')
     parser.add_argument('-vocab_size', type=int, default=400002)
     parser.add_argument('-embed_dim', type=int, default=300)
     parser.add_argument('-res', type=str, default='../results/bert.trec')
@@ -155,23 +177,30 @@ def main():
     # init embedding
     embedding_init = embeddingloader(args)
     tokenizer = Tokenizer(args.embed)
-    bert_tokenizer = BertTokenizer.from_pretrained(args.model)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # init policy
-    policy = all_policy(args, embedding_init)
+    policy = Policy(args, embedding_init)
     policy.to(device)
     p_optim = torch.optim.Adam(filter(lambda p: p.requires_grad, policy.parameters()), lr=1e-4)
 
-    # init model
-    config = BertConfig.from_pretrained(args.model)
-    model = BertForRanking.from_pretrained(args.model, config=config)
-    model.to(device)
+    if args.model.lower() == 'bert':
+        bert_tokenizer = BertTokenizer.from_pretrained(args.pretrain)
+        config = BertConfig.from_pretrained(args.pretrain)
+        model = BertForRanking.from_pretrained(args.pretrain, config=config)
 
-    # init optimizer and load dev_data
-    m_optim = AdamW(model.parameters(), lr=5e-5)
-    dev_data = bert_dev_dataloader(args, bert_tokenizer)
+        m_optim = AdamW(model.parameters(), lr=5e-5)
+        dev_data = bert_dev_dataloader(args, bert_tokenizer)
+    elif args.model.lower() == 'cknrm':
+        bert_tokenizer = None
+        model = cknrm(args, embedding_init)
+
+        m_optim = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-3)
+        dev_data = dev_dataloader(args, tokenizer)
+    else:
+        raise ('model must be bert or cknrm!')
+    model.to(device)
 
     # loss function
     crit = nn.MarginRankingLoss(margin=1, reduction='mean')
@@ -193,7 +222,7 @@ def main():
             for feature in features:
                 writer.write(feature+'\n')
     else:
-        print('mode must be train or infer!')
+        raise ('mode must be train or infer!')
 
 if __name__ == "__main__":
     main()
