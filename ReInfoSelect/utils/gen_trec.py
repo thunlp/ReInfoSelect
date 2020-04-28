@@ -4,7 +4,7 @@ import json
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-dev', type=str, default='../data/dev_toy.tsv')
-    parser.add_argument('-res', type=str, default='../results/cknrm.trec')
+    parser.add_argument('-res', type=str, default='../results/cknrm_ca.trec')
     parser.add_argument('-k', type=int, default=2)
     args = parser.parse_args()
 

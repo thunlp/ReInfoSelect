@@ -3,9 +3,12 @@ import json
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-input', type=list, default=['../results/cknrm.trec', '../results/cknrm_ca.trec'])
-    parser.add_argument('output', type=str, default='../results/cknrm_ensemble.trec')
+    parser.add_argument('-input', type=str, action='append', default=None)
+    parser.add_argument('-output', type=str, default='../results/cknrm_ensemble.trec')
     args = parser.parse_args()
+
+    if args.input is None:
+        raise ('no files for ensemble!')
 
     res = {}
     for trec in args.input:
@@ -27,7 +30,7 @@ def main():
         for did in res[qid]:
             result_dict[qid].append((did, res[qid][did]))
 
-    with open('recknrm_ensb.txt', 'w') as writer:
+    with open(args.output, 'w') as writer:
         for qid, values in result_dict.items():
             res = sorted(values, key=lambda x: x[1], reverse=True) # reverse sort by value[1] (output), res=[(docid,score)]
             for rank,value in enumerate(res):
