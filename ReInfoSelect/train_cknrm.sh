@@ -8,7 +8,7 @@ python train_cknrm.py \
         -vocab_size 400002 \
         -embed_dim 300 \
         -res ../results/cknrm.trec \
-        -res_f ../results/cknrm_features \
+        -res_f cknrm_features \
         -depth 20 \
         -gamma 0.99 \
         -T 4 \
