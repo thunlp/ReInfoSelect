@@ -1,1 +1,1 @@
-from .policy import all_policy
+from .policy import Policy

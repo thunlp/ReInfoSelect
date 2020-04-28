@@ -7,7 +7,7 @@ from torch.distributions import Categorical
 
 from transformers import *
 
-from policies import all_policy
+from policies import Policy
 from dataloaders import *
 from models import BertForRanking
 from metrics import *

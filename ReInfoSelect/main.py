@@ -1,13 +1,16 @@
 import argparse
 
 import torch
-from torch import nn
+from torch import nn, optim
 from torch.autograd import Variable
 from torch.distributions import Categorical
 
-from policies import Policy
+from transformers import *
+
+from tokenizers import *
+from policies import *
 from dataloaders import *
-from models import cknrm
+from models import *
 from metrics import *
 
 def dev(args, model, dev_data, device):
@@ -18,10 +21,10 @@ def dev(args, model, dev_data, device):
         doc_id = batch[1]
         label = batch[2]
         batch = tuple(t.to(device) for t in batch[3:])
-        (retrieval_score, query_idx, doc_idx, query_len, doc_len) = batch
+        (retrieval_score, d_input_ids, d_input_mask, d_segment_ids) = batch
 
         with torch.no_grad():
-            doc_scores, doc_features = model(query_idx, doc_idx, query_len, doc_len, retrieval_score)
+            doc_scores, doc_features = model(d_input_ids, d_input_mask, d_segment_ids, retrieval_score)
         d_scores = doc_scores.detach().cpu().tolist()
         d_features = doc_features.detach().cpu().tolist()
 
@@ -41,16 +44,16 @@ def dev(args, model, dev_data, device):
         for q_id, scores in rst_dict.items():
             res = sorted(scores, key=lambda x: x[1], reverse=True)
             for rank, value in enumerate(res):
-                writer.write(q_id+' '+'Q0'+' '+str(value[2])+' '+str(rank+1)+' '+str(value[1])+' Conv-KNRM\n')
+                writer.write(q_id+' '+'Q0'+' '+str(value[2])+' '+str(rank+1)+' '+str(value[1])+' bert\n')
 
     ndcg = cal_ndcg(args.qrels, args.res, args.depth)
     return ndcg, features
 
-def train(args, policy, p_optim, model, m_optim, crit, word2vec, dev_data, device):
+def train(args, policy, p_optim, model, m_optim, crit, tokenizer, bert_tokenizer, dev_data, device):
     best_ndcg = 0.0
     for ep in range(args.epoch):
         # train data
-        train_data = train_dataloader(args, word2vec)
+        train_data = bert_train_dataloader(args, tokenizer, bert_tokenizer)
         ndcg, features = dev(args, model, dev_data, device)
         print('init_ndcg: ' + str(ndcg))
         if ndcg > best_ndcg:
@@ -67,9 +70,9 @@ def train(args, policy, p_optim, model, m_optim, crit, word2vec, dev_data, devic
         for step, batch in enumerate(train_data):
             # select action
             batch = tuple(t.to(device) for t in batch)
-            (query_idx, pos_idx, neg_idx, query_len, pos_len, neg_len) = batch
+            (query_idx, doc_idx, query_len, doc_len, p_input_ids, p_input_mask, p_segment_ids, n_input_ids, n_input_mask, n_segment_ids) = batch
 
-            probs = policy(query_idx, pos_idx, query_len, pos_len)
+            probs = policy(query_idx, doc_idx, query_len, doc_len)
             dist  = Categorical(probs)
             action = dist.sample()
             if action.sum().item() < 1 and step % args.T != 0:
@@ -82,8 +85,8 @@ def train(args, policy, p_optim, model, m_optim, crit, word2vec, dev_data, devic
             log_prob_ps.append(torch.masked_select(log_prob_p, mask))
             log_prob_ns.append(torch.masked_select(log_prob_n, mask))
 
-            p_scores, _ = model(query_idx, pos_idx, query_len, pos_len)
-            n_scores, _ = model(query_idx, neg_idx, query_len, neg_len)
+            p_scores, _ = model(p_input_ids, p_segment_ids, p_input_mask)
+            n_scores, _ = model(n_input_ids, n_segment_ids, n_input_mask)
             label = torch.ones(p_scores.size()).to(device)
             batch_loss = crit(p_scores, n_scores, Variable(label, requires_grad=False))
             batch_loss = batch_loss.mul(weights).mean()
@@ -134,36 +137,41 @@ def main():
     parser.add_argument('-dev', type=str, default='../data/dev_toy.tsv')
     parser.add_argument('-qrels', type=str, default='../data/qrels_toy')
     parser.add_argument('-embed', type=str, default='../data/glove.6B.300d.txt')
+    parser.add_argument('-model', type=str, default='bert-base-uncased')
     parser.add_argument('-vocab_size', type=int, default=400002)
     parser.add_argument('-embed_dim', type=int, default=300)
-    parser.add_argument('-res', type=str, default='../results/cknrm.trec')
-    parser.add_argument('-res_f', type=str, default='../features/cknrm_features')
+    parser.add_argument('-res', type=str, default='../results/bert.trec')
+    parser.add_argument('-res_f', type=str, default='../features/bert_features')
     parser.add_argument('-depth', type=int, default=20)
     parser.add_argument('-gamma', type=float, default=0.99)
     parser.add_argument('-T', type=int, default=4)
     parser.add_argument('-n_kernels', type=int, default=21)
     parser.add_argument('-max_query_len', type=int, default=20)
-    parser.add_argument('-max_seq_len', type=int, default=128)
+    parser.add_argument('-max_seq_len', type=int, default=150)
     parser.add_argument('-epoch', type=int, default=1)
-    parser.add_argument('-batch_size', type=int, default=32)
+    parser.add_argument('-batch_size', type=int, default=4)
     args = parser.parse_args()
 
     # init embedding
-    word2vec, embedding_init = embloader(args)
+    embedding_init = embeddingloader(args)
+    tokenizer = Tokenizer(args.embed)
+    bert_tokenizer = BertTokenizer.from_pretrained(args.model)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    # init policy
     policy = all_policy(args, embedding_init)
     policy.to(device)
-    p_optim = torch.optim.Adam(filter(lambda p: p.requires_grad, policy.parameters()), lr=1e-3)
+    p_optim = torch.optim.Adam(filter(lambda p: p.requires_grad, policy.parameters()), lr=1e-4)
 
     # init model
-    model = cknrm(args, embedding_init)
+    config = BertConfig.from_pretrained(args.model)
+    model = BertForRanking.from_pretrained(args.model, config=config)
     model.to(device)
 
     # init optimizer and load dev_data
-    m_optim = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-3)
-    dev_data = dev_dataloader(args, word2vec)
+    m_optim = AdamW(model.parameters(), lr=5e-5)
+    dev_data = bert_dev_dataloader(args, bert_tokenizer)
 
     # loss function
     crit = nn.MarginRankingLoss(margin=1, reduction='mean')
@@ -175,7 +183,7 @@ def main():
         crit = nn.DataParallel(crit)
 
     if args.mode == 'train':
-        train(args, policy, p_optim, model, m_optim, crit, word2vec, dev_data, device)
+        train(args, policy, p_optim, model, m_optim, crit, tokenizer, bert_tokenizer, dev_data, device)
     elif args.mode == 'infer':
         assert args.checkpoint is not None
         state_dict=torch.load(args.checkpoint)

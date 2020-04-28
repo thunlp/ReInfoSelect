@@ -31,60 +31,47 @@ def pack_bert_seq(q_tokens, p_tokens, tokenizer, max_seq_length):
 
     return input_ids, input_mask, segment_ids
 
-def tok2idx(toks, word2idx):
-    input_ids = []
-    for tok in toks:
-        if tok in word2idx:
-            input_ids.append(word2idx[tok])
-        else:
-            input_ids.append(word2idx['<UNK>'])
-    return input_ids
-
-def read_train_to_features(args, word2idx, tokenizer):
+def read_train_to_features(args, tokenizer, bert_tokenizer):
     with open(args.train, 'r') as reader:
         features = []
         for line in reader:
             s = line.strip('\n').split('\t')
 
-            query_toks = s[0].split()
-            pos_toks = s[1].split()
-            neg_toks = s[2].split()
-
-            query_toks = query_toks[:args.max_query_len]
-            pos_toks = pos_toks[:args.max_seq_len]
-            neg_toks = neg_toks[:args.max_seq_len]
+            query_toks = tokenizer.tokenize(s[0])[:args.max_query_len]
+            pos_toks = tokenizer.tokenize(s[1])[:args.max_seq_len]
+            neg_toks = tokenizer.tokenizes[2])[:args.max_seq_len]
 
             query_len = len(query_toks)
             pos_len = len(pos_toks)
             neg_len = len(neg_toks)
 
             while len(query_toks) < args.max_query_len:
-                query_toks.append('<PAD>')
+                query_toks.append(tokenizer.pad)
             while len(pos_toks) < args.max_seq_len:
-                pos_toks.append('<PAD>')
+                pos_toks.append(tokenizer.pad)
             while len(neg_toks) < args.max_seq_len:
-                neg_toks.append('<PAD>')
+                neg_toks.append(tokenizer.pad)
 
-            query_idx = tok2idx(query_toks, word2idx)
-            pos_idx = tok2idx(pos_toks, word2idx)
-            neg_idx = tok2idx(neg_toks, word2idx)
+            query_idx = tokenizer.convert_tokens_to_ids(query_toks)
+            pos_idx = tokenizer.convert_tokens_to_ids(pos_toks)
+            neg_idx = tokenizer.convert_tokens_to_ids(neg_toks)
 
             s[0] = ' '.join(query_toks)
             s[1] = ' '.join(pos_toks)
             s[2] = ' '.join(neg_toks)
-            q_tokens = tokenizer.tokenize(s[0])
+            q_tokens = bert_tokenizer.tokenize(s[0])
             if len(q_tokens) > 64:
                 q_tokens = q_tokens[:64]
             max_doc_length = 384 - len(q_tokens) - 3
-            p_tokens = tokenizer.tokenize(s[1])
+            p_tokens = bert_tokenizer.tokenize(s[1])
             if len(p_tokens) > max_doc_length:
                 p_tokens = p_tokens[:max_doc_length]
-            n_tokens = tokenizer.tokenize(s[2])
+            n_tokens = bert_tokenizer.tokenize(s[2])
             if len(n_tokens) > max_doc_length:
                 n_tokens = n_tokens[:max_doc_length]
 
-            p_input_ids, p_input_mask, p_segment_ids = pack_bert_seq(q_tokens, p_tokens, tokenizer, 384)
-            n_input_ids, n_input_mask, n_segment_ids = pack_bert_seq(q_tokens, n_tokens, tokenizer, 384)
+            p_input_ids, p_input_mask, p_segment_ids = pack_bert_seq(q_tokens, p_tokens, bert_tokenizer, 384)
+            n_input_ids, n_input_mask, n_segment_ids = pack_bert_seq(q_tokens, n_tokens, bert_tokenizer, 384)
 
             features.append({
                 'query_idx': query_idx,
@@ -105,26 +92,10 @@ def read_dev_to_features(args, tokenizer):
         for line in reader:
             s = line.strip('\n').split('\t')
 
-            query_toks = s[0].split()
-            doc_toks = s[1].split()
-            qd_score = int(s[2])
+            label = int(s[2])
             query_id = s[3]
             doc_id = s[4]
-            raw_score = float(s[5])
-
-            query_toks = query_toks[:args.max_query_len]
-            doc_toks = doc_toks[:args.max_seq_len]
-
-            query_len = len(query_toks)
-            doc_len = len(doc_toks)
-
-            while len(query_toks) < args.max_query_len:
-                query_toks.append('<PAD>')
-            while len(doc_toks) < args.max_seq_len:
-                doc_toks.append('<PAD>')
-
-            s[0] = ' '.join(query_toks)
-            s[1] = ' '.join(doc_toks)
+            retrieval_score = float(s[5])
 
             q_tokens = tokenizer.tokenize(s[0])
             if len(q_tokens) > 64:

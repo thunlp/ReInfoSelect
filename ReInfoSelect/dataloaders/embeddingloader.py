@@ -1,6 +1,6 @@
 import numpy as np
 
-def embloader(args):
+def embeddingloader(args):
     idx = 0
     idx2word = []
     word2idx = {}
@@ -29,4 +29,4 @@ def embloader(args):
     for idx, word in enumerate(idx2word):
         embedding_init[idx] = word2vec[word]
 
-    return word2idx, embedding_init
+    return embedding_init

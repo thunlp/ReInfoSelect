@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 from models import cknrm
 
-class all_policy(nn.Module):
+class Policy(nn.Module):
     def __init__(self, args, embedding_init=None):
         super(all_policy, self).__init__()
         self.embedding = nn.Embedding(args.vocab_size, args.embed_dim)
