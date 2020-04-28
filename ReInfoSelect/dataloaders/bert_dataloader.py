@@ -39,7 +39,7 @@ def read_train_to_features(args, tokenizer, bert_tokenizer):
 
             query_toks = tokenizer.tokenize(s[0])[:args.max_query_len]
             pos_toks = tokenizer.tokenize(s[1])[:args.max_seq_len]
-            neg_toks = tokenizer.tokenizes[2])[:args.max_seq_len]
+            neg_toks = tokenizer.tokenize(s[2])[:args.max_seq_len]
 
             query_len = len(query_toks)
             pos_len = len(pos_toks)
