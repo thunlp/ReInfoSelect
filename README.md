@@ -73,7 +73,7 @@ Then, concatenate the neural features with retrieval (SDM or BM25) score and run
 bash coor_ascent.sh
 ```
 
-You can change *-mode* from *train* to *infer* and add *-checkpoint* in *train_cknrm.sh* or *train_bert.sh* for inference.
+You can change *-mode* from *train* to *infer* and add *-checkpoint* in *train.sh* for inference.
 
 For ensemble:
 ```
