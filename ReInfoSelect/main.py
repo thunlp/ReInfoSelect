@@ -1,4 +1,5 @@
 import argparse
+import json
 
 import torch
 from torch import nn, optim
@@ -20,7 +21,9 @@ def dev(args, model, dev_data, device):
         query_id = batch[0]
         doc_id = batch[1]
         label = batch[2]
-        batch = tuple(t.to(device) for t in batch[3:])
+        query = batch[3]
+        doc = batch[4]
+        batch = tuple(t.to(device) for t in batch[5:])
         if args.model.lower() == 'bert':
             (retrieval_score, d_input_ids, d_input_mask, d_segment_ids) = batch
             with torch.no_grad():
@@ -34,7 +37,7 @@ def dev(args, model, dev_data, device):
         d_scores = doc_scores.detach().cpu().tolist()
         d_features = doc_features.detach().cpu().tolist()
 
-        for (q_id, d_id, l_s, d_s, d_f) in zip(query_id, doc_id, label, d_scores, d_features):
+        for (q_id, d_id, l_s, q, d, d_s, d_f) in zip(query_id, doc_id, label, query, doc, d_scores, d_features):
             feature = []
             feature.append(str(l_s))
             feature.append('id:' + q_id)
@@ -42,15 +45,32 @@ def dev(args, model, dev_data, device):
                 feature.append(str(i+1) + ':' + str(fi))
             features.append(' '.join(feature))
             if q_id in rst_dict:
-                rst_dict[q_id].append((l_s, d_s, d_id))
+                rst_dict[q_id].append((l_s, d_s, d_id, q, d))
             else:
-                rst_dict[q_id] = [(l_s, d_s, d_id)]
+                rst_dict[q_id] = [(l_s, d_s, d_id q, d)]
 
-    with open(args.res, 'w') as writer:
+    with open(args.res_trec, 'w') as writer:
         for q_id, scores in rst_dict.items():
+            ps = {}
             res = sorted(scores, key=lambda x: x[1], reverse=True)
             for rank, value in enumerate(res):
-                writer.write(q_id+' '+'Q0'+' '+str(value[2])+' '+str(rank+1)+' '+str(value[1])+' bert\n')
+                if value[2] not in ps:
+                    ps[value[2]] = 1
+                    writer.write(q_id+' '+'Q0'+' '+str(value[2])+' '+str(rank+1)+' '+str(value[1])+' bert\n')
+
+    with open(args.res_json, 'w') as writer:
+        tmp = {"query_id": "", "records": []}
+        for q_id, scores in rst_dict.items():
+            tmp["query_id"] = q_id
+            tmp["records"] = []
+            ps = {}
+            res = sorted(scores, key=lambda x: x[1], reverse=True)
+            tmp["query"] = res[0][3]
+            for rank, value in enumerate(res):
+                if value[2] not in ps:
+                    ps[value[2]] = 1
+                    tmp["records"].append({"paper_id":value[2], "score":value[1], "paragraph":value[4]})
+            writer.write(json.dumps(tmp) + '\n')
 
     ndcg = cal_ndcg(args.qrels, args.res, args.depth)
     return ndcg, features
@@ -162,8 +182,9 @@ def main():
     parser.add_argument('-pretrain', type=str, default='bert-base-uncased')
     parser.add_argument('-vocab_size', type=int, default=400002)
     parser.add_argument('-embed_dim', type=int, default=300)
-    parser.add_argument('-res', type=str, default='../results/bert.trec')
-    parser.add_argument('-res_f', type=str, default='../features/bert_features')
+    parser.add_argument('-res_trec', type=str, default='../results/bert.trec')
+    parser.add_argument('-res_json', type=str, default='../results/cknrm.json')
+    parser.add_argument('-res_feature', type=str, default='../features/bert_features')
     parser.add_argument('-depth', type=int, default=20)
     parser.add_argument('-gamma', type=float, default=0.99)
     parser.add_argument('-T', type=int, default=4)
@@ -218,7 +239,7 @@ def main():
         state_dict=torch.load(args.checkpoint)
         model.load_state_dict(state_dict)
         ndcg, features = dev(args, model, dev_data, device)
-        with open(args.res_f, 'w') as writer:
+        with open(args.res_feature, 'w') as writer:
             for feature in features:
                 writer.write(feature+'\n')
     else:

@@ -111,6 +111,8 @@ def read_dev_to_features(args, tokenizer):
                 'query_id': query_id,
                 'doc_id': doc_id,
                 'label': label,
+                'query': s[0],
+                'doc': s[1],
                 'retrieval_score': retrieval_score,
                 'd_input_ids': d_input_ids,
                 'd_input_mask': d_input_mask,
@@ -156,11 +158,13 @@ def bert_dev_dataloader(args, tokenizer):
         query_id = [features[i]['query_id'] for i in batch_idx]
         doc_id = [features[i]['doc_id'] for i in batch_idx]
         label = [features[i]['label'] for i in batch_idx]
+        query = [features[i]['query'] for i in batch_idx]
+        doc = [features[i]['doc'] for i in batch_idx]
         retrieval_score = torch.tensor([features[i]['retrieval_score'] for i in batch_idx], dtype=torch.float)
         d_input_ids = torch.tensor([features[i]['d_input_ids'] for i in batch_idx], dtype=torch.long)
         d_input_mask = torch.tensor([features[i]['d_input_mask'] for i in batch_idx], dtype=torch.long)
         d_segment_ids = torch.tensor([features[i]['d_segment_ids'] for i in batch_idx], dtype=torch.long)
 
-        batch = (query_id, doc_id, label, retrieval_score, d_input_ids, d_input_mask, d_segment_ids)
+        batch = (query_id, doc_id, label, query, doc, retrieval_score, d_input_ids, d_input_mask, d_segment_ids)
         batches.append(batch)
     return batches

@@ -65,6 +65,8 @@ def read_dev_to_features(args, tokenizer):
                 'query_id': query_id,
                 'doc_id': doc_id,
                 'label': label,
+                'query': s[0],
+                'doc': s[1],
                 'retrieval_score': retrieval_score,
                 'query_idx': query_idx,
                 'doc_idx': doc_idx,
@@ -108,6 +110,8 @@ def dev_dataloader(args, tokenizer):
         query_id = [features[i]['query_id'] for i in batch_idx]
         doc_id = [features[i]['doc_id'] for i in batch_idx]
         label = [features[i]['label'] for i in batch_idx]
+        query = [features[i]['query'] for i in batch_idx]
+        doc = [features[i]['doc'] for i in batch_idx]
         retrieval_score = torch.tensor([features[i]['retrieval_score'] for i in batch_idx], dtype=torch.float)
         query_idx = [torch.tensor(features[i]['query_idx'], dtype=torch.long) for i in batch_idx]
         doc_idx = [torch.tensor(features[i]['doc_idx'], dtype=torch.long) for i in batch_idx]
@@ -117,6 +121,6 @@ def dev_dataloader(args, tokenizer):
         query_idx = nn.utils.rnn.pad_sequence(query_idx, batch_first=True)
         doc_idx = nn.utils.rnn.pad_sequence(doc_idx, batch_first=True)
 
-        batch = (query_id, doc_id, label, retrieval_score, query_idx, doc_idx, query_len, doc_len)
+        batch = (query_id, doc_id, label, query, doc, retrieval_score, query_idx, doc_idx, query_len, doc_len)
         batches.append(batch)
     return batches

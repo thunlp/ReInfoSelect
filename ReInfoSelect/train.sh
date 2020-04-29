@@ -8,8 +8,9 @@ python main.py \
         -embed ../data/glove.6B.300d.txt \
         -vocab_size 400002 \
         -embed_dim 300 \
-        -res ../results/cknrm.trec \
-        -res_f ../features/cknrm_features \
+        -res_trec ../results/cknrm.trec \
+        -res_json ../results/cknrm.json \
+        -res_feature ../features/cknrm_features \
         -depth 20 \
         -gamma 0.99 \
         -T 1 \
