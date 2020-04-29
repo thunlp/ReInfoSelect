@@ -5,13 +5,13 @@ from torch import nn, optim
 from torch.autograd import Variable
 from torch.distributions import Categorical
 
-from transformers import *
-
 from tokenizers import *
 from policies import *
 from dataloaders import *
 from models import *
 from metrics import *
+
+from transformers import *
 
 def dev(args, model, dev_data, device):
     features = []
