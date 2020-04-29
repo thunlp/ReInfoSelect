@@ -91,7 +91,7 @@ def train(args, policy, p_optim, model, m_optim, crit, tokenizer, bert_tokenizer
             probs = policy(query_idx, doc_idx, query_len, doc_len)
             dist  = Categorical(probs)
             action = dist.sample()
-            if action.sum().item() < 1 and step % args.T != 0:
+            if action.sum().item() < 1 and (step % args.T != 0 or len(rewards) == 0):
                 continue
 
             mask = action.ge(0.5)
