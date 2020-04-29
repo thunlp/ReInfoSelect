@@ -11,7 +11,7 @@ from dataloaders import *
 from models import *
 from metrics import *
 
-from transformers import *
+from transformers import BertTokenizer, BertConfig, AdamW
 
 def dev(args, model, dev_data, device):
     features = []

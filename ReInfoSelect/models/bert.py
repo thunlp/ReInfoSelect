@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
-from transformers import *
+
+from transformers import BertPreTrainedModel, BertModel
 
 class BertForRanking(BertPreTrainedModel):
     def __init__(self, config):
