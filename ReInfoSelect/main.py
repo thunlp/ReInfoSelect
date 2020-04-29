@@ -5,7 +5,7 @@ from torch import nn, optim
 from torch.autograd import Variable
 from torch.distributions import Categorical
 
-from tokenizer import *
+from cknrm_tokenizer import *
 from policies import *
 from dataloaders import *
 from models import *
