@@ -1,4 +1,4 @@
-import argparse
+	import argparse
 import json
 
 import torch
@@ -47,7 +47,7 @@ def dev(args, model, dev_data, device):
             if q_id in rst_dict:
                 rst_dict[q_id].append((l_s, d_s, d_id, q, d))
             else:
-                rst_dict[q_id] = [(l_s, d_s, d_id q, d)]
+                rst_dict[q_id] = [(l_s, d_s, d_id, q, d)]
 
     with open(args.res_trec, 'w') as writer:
         for q_id, scores in rst_dict.items():
@@ -72,7 +72,7 @@ def dev(args, model, dev_data, device):
                     tmp["records"].append({"paper_id":value[2], "score":value[1], "paragraph":value[4]})
             writer.write(json.dumps(tmp) + '\n')
 
-    ndcg = cal_ndcg(args.qrels, args.res, args.depth)
+    ndcg = cal_ndcg(args.qrels, args.res_trec, args.depth)
     return ndcg, features
 
 def train(args, policy, p_optim, model, m_optim, crit, tokenizer, bert_tokenizer, dev_data, device):
@@ -89,7 +89,7 @@ def train(args, policy, p_optim, model, m_optim, crit, tokenizer, bert_tokenizer
         print('init_ndcg: ' + str(ndcg))
         if ndcg > best_ndcg:
             best_ndcg = ndcg
-            with open(args.res_f, 'w') as writer:
+            with open(args.res_feature, 'w') as writer:
                 for feature in features:
                     writer.write(feature+'\n')
         last_ndcg = ndcg
@@ -139,7 +139,7 @@ def train(args, policy, p_optim, model, m_optim, crit, tokenizer, bert_tokenizer
             print('epoch: ' + str(ep+1) + ', step: ' + str(step+1) + ', ndcg: ' + str(last_ndcg) + ', best_ndcg: ' + str(best_ndcg))
             if ndcg > best_ndcg:
                 best_ndcg = ndcg
-                with open(args.res_f, 'w') as writer:
+                with open(args.res_feature, 'w') as writer:
                     for feature in features:
                         writer.write(feature+'\n')
             reward = ndcg - last_ndcg
