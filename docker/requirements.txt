@@ -1,5 +1,5 @@
-torch
-transformers
-krovetzstemmer
-nltk
-pytrec_eval
+torch==1.4.0
+transformers==2.8.0
+krovetzstemmer==0.6
+nltk==3.5
+pytrec_eval==0.4
