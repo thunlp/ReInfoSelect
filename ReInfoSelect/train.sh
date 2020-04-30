@@ -3,6 +3,7 @@ python main.py \
         -mode train \
         -model cknrm \
         -train ../data/triples.train.small.tsv \
+        -max_input 1280000 \
         -dev ../data/dev_toy.tsv \
         -qrels ../data/qrels_toy \
         -embed ../data/glove.6B.300d.txt \

@@ -176,6 +176,7 @@ def main():
     parser.add_argument('-model', type=str, default='bert')
     parser.add_argument('-checkpoint', type=str, default=None)
     parser.add_argument('-train', type=str, default='../data/triples.train.small.tsv')
+    parser.add_argument('-max_input', type=str, default=1280000)
     parser.add_argument('-dev', type=str, default='../data/dev_toy.tsv')
     parser.add_argument('-qrels', type=str, default='../data/qrels_toy')
     parser.add_argument('-embed', type=str, default='../data/glove.6B.300d.txt')

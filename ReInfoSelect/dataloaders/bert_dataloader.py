@@ -35,6 +35,8 @@ def read_train_to_features(args, tokenizer, bert_tokenizer):
     with open(args.train, 'r') as reader:
         features = []
         for line in reader:
+            if len(features) == args.max_input:
+                break
             s = line.strip('\n').split('\t')
 
             query_toks = tokenizer.tokenize(s[0])[:args.max_query_len]
@@ -90,6 +92,8 @@ def read_dev_to_features(args, tokenizer):
     with open(args.dev, 'r') as reader:
         features = []
         for line in reader:
+            if len(features) == args.max_input:
+                break
             s = line.strip('\n').split('\t')
 
             label = int(s[2])
