@@ -35,7 +35,7 @@ def read_train_to_features(args, tokenizer, bert_tokenizer):
     with open(args.train, 'r') as reader:
         features = []
         for line in reader:
-            if len(features) == args.max_input:
+            if len(features) >= args.max_input:
                 break
             s = line.strip('\n').split('\t')
 
@@ -92,7 +92,7 @@ def read_dev_to_features(args, tokenizer):
     with open(args.dev, 'r') as reader:
         features = []
         for line in reader:
-            if len(features) == args.max_input:
+            if len(features) >= args.max_input:
                 break
             s = line.strip('\n').split('\t')
 
