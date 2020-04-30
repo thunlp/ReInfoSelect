@@ -61,9 +61,9 @@ cd ..
 ```
 
 ## Run
-First, please prepare your data in recommended [format](./data).
+First, please prepare your data in recommended [format](./data). The MS MARCO or ClueWeb09 corpus may be too large for your machine, you can change *-max_input* to set max input numbers of training instances.
 
-For cknrm training, set *-model* to *cknrm*, for bert training, set to *bert*.
+For cknrm training, set *-model* to *cknrm*, for bert training, set to *bert*, the batch\_size for bert may need to set smaller.
 ```
 bash train.sh
 ```
