@@ -92,6 +92,10 @@ def train(args, policy, p_optim, model, m_optim, crit, tokenizer, bert_tokenizer
             with open(args.res_feature, 'w') as writer:
                 for feature in features:
                     writer.write(feature+'\n')
+            if torch.cuda.device_count() > 1:
+                torch.save(model.module.state_dict(), args.save_best)
+            else:
+                torch.save(model.state_dict(), args.save_best)
         last_ndcg = ndcg
 
         log_prob_ps = []
@@ -142,6 +146,10 @@ def train(args, policy, p_optim, model, m_optim, crit, tokenizer, bert_tokenizer
                 with open(args.res_feature, 'w') as writer:
                     for feature in features:
                         writer.write(feature+'\n')
+                if torch.cuda.device_count() > 1:
+                    torch.save(model.module.state_dict(), args.save_best)
+                else:
+                    torch.save(model.state_dict(), args.save_best)
             reward = ndcg - last_ndcg
             last_ndcg = ndcg
             rewards.append(reward)
@@ -177,6 +185,7 @@ def main():
     parser.add_argument('-checkpoint', type=str, default=None)
     parser.add_argument('-train', type=str, default='../data/triples.train.small.tsv')
     parser.add_argument('-max_input', type=int, default=1280000)
+    parser.add_argument('-save_best', type=str, default='../checkpoints/reinfoselect_bert.bin')
     parser.add_argument('-dev', type=str, default='../data/dev_toy.tsv')
     parser.add_argument('-qrels', type=str, default='../data/qrels_toy')
     parser.add_argument('-embed', type=str, default='../data/glove.6B.300d.txt')
