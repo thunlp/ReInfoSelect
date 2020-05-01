@@ -92,6 +92,7 @@ def train(args, policy, p_optim, model, m_optim, crit, tokenizer, bert_tokenizer
             with open(args.res_feature, 'w') as writer:
                 for feature in features:
                     writer.write(feature+'\n')
+            print('save best model on target dataset...')
             if torch.cuda.device_count() > 1:
                 torch.save(model.module.state_dict(), args.save_best)
             else:
@@ -146,6 +147,7 @@ def train(args, policy, p_optim, model, m_optim, crit, tokenizer, bert_tokenizer
                 with open(args.res_feature, 'w') as writer:
                     for feature in features:
                         writer.write(feature+'\n')
+                print('save best model on target dataset...')
                 if torch.cuda.device_count() > 1:
                     torch.save(model.module.state_dict(), args.save_best)
                 else:
