@@ -141,7 +141,7 @@ def train(args, policy, p_optim, model, m_optim, crit, tokenizer, bert_tokenizer
             m_optim.zero_grad()
 
             ndcg, features = dev(args, model, dev_data, device)
-            print('epoch: ' + str(ep+1) + ', step: ' + str(step+1) + ', ndcg: ' + str(last_ndcg) + ', best_ndcg: ' + str(best_ndcg))
+            print('epoch: ' + str(ep+1) + ', step: ' + str(step+1) + ', ndcg: ' + str(ndcg) + ', best_ndcg: ' + str(max(ndcg, best_ndcg)))
             if ndcg > best_ndcg:
                 best_ndcg = ndcg
                 with open(args.res_feature, 'w') as writer:
