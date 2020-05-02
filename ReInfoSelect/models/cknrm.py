@@ -29,9 +29,6 @@ class cknrm(nn.Module):
         self.d_word_vec = args.embed_dim
         tensor_mu = torch.FloatTensor(kernal_mus(args.n_kernels))
         tensor_sigma = torch.FloatTensor(kernel_sigmas(args.n_kernels))
-        if torch.cuda.is_available():
-            tensor_mu = tensor_mu.cuda()
-            tensor_sigma = tensor_sigma.cuda()
         self.mu = Variable(tensor_mu, requires_grad=False).view(1, 1, 1, args.n_kernels)
         self.sigma = Variable(tensor_sigma, requires_grad=False).view(1, 1, 1, args.n_kernels)
         
@@ -73,6 +70,10 @@ class cknrm(nn.Module):
         return mask
 
     def forward(self, query_idx, doc_idx, query_len, doc_len, raw_score=None):
+        if torch.cuda.is_available():
+            self.mu = self.mu.cuda()
+            self.sigma = self.sigma.cuda()
+
         qw_embed = self.embedding(query_idx)
         dw_embed = self.embedding(doc_idx)
         inputs_qwm = self.create_mask_like(query_len, qw_embed)
