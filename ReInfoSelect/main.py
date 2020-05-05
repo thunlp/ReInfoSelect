@@ -241,11 +241,6 @@ def main():
     crit = nn.MarginRankingLoss(margin=1, reduction='mean')
     crit.to(device)
 
-    if torch.cuda.device_count() > 1:
-        policy = nn.DataParallel(policy)
-        model = nn.DataParallel(model)
-        crit = nn.DataParallel(crit)
-
     if args.mode == 'train':
         train(args, policy, p_optim, model, m_optim, crit, tokenizer, bert_tokenizer, dev_data, device)
     elif args.mode == 'infer':
@@ -258,6 +253,11 @@ def main():
                 writer.write(feature+'\n')
     else:
         raise ('mode must be train or infer!')
+
+    if torch.cuda.device_count() > 1:
+        policy = nn.DataParallel(policy)
+        model = nn.DataParallel(model)
+        crit = nn.DataParallel(crit)
 
 if __name__ == "__main__":
     main()
