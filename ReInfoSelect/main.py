@@ -72,6 +72,9 @@ def dev(args, model, dev_data, device):
                     tmp["records"].append({"paper_id":value[2], "score":value[1], "paragraph":value[4]})
             writer.write(json.dumps(tmp) + '\n')
 
+    if args.mode == 'infer':
+        return features
+
     ndcg = cal_ndcg(args.qrels, args.res_trec, args.depth)
     return ndcg, features
 
@@ -247,7 +250,7 @@ def main():
         assert args.checkpoint is not None
         state_dict=torch.load(args.checkpoint)
         model.load_state_dict(state_dict)
-        ndcg, features = dev(args, model, dev_data, device)
+        features = dev(args, model, dev_data, device)
         with open(args.res_feature, 'w') as writer:
             for feature in features:
                 writer.write(feature+'\n')
