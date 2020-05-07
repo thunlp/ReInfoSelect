@@ -18,12 +18,9 @@ def read_train_to_features(args, tokenizer):
             pos_len = len(pos_toks)
             neg_len = len(neg_toks)
 
-            while len(query_toks) < args.max_query_len:
-                query_toks.append(tokenizer.pad)
-            while len(pos_toks) < args.max_seq_len:
-                pos_toks.append(tokenizer.pad)
-            while len(neg_toks) < args.max_seq_len:
-                neg_toks.append(tokenizer.pad)
+            query_toks = query_toks + [tokenizer.pad] * (args.max_query_len - query_len)
+            pos_toks = pos_toks + [tokenizer.pad] * (args.max_seq_len - pos_len)
+            neg_toks = neg_toks + [tokenizer.pad] * (args.max_seq_len - neg_len)
 
             query_idx = tokenizer.convert_tokens_to_ids(query_toks)
             pos_idx = tokenizer.convert_tokens_to_ids(pos_toks)
@@ -57,10 +54,8 @@ def read_dev_to_features(args, tokenizer):
             query_len = len(query_toks)
             doc_len = len(doc_toks)
 
-            while len(query_toks) < args.max_query_len:
-                query_toks.append(tokenizer.pad)
-            while len(doc_toks) < args.max_seq_len:
-                doc_toks.append(tokenizer.pad)
+            query_toks = query_toks + [tokenizer.pad] * (args.max_query_len - query_len)
+            doc_toks = doc_toks + [tokenizer.pad] * (args.max_seq_len - doc_len)
 
             query_idx = tokenizer.convert_tokens_to_ids(query_toks)
             doc_idx = tokenizer.convert_tokens_to_ids(doc_toks)

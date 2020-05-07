@@ -20,10 +20,9 @@ def pack_bert_seq(q_tokens, p_tokens, tokenizer, max_seq_length):
 
     input_ids = tokenizer.convert_tokens_to_ids(tokens)
     input_mask = [1] * len(input_ids)
-    while len(input_ids) < max_seq_length:
-        input_ids.append(0)
-        input_mask.append(0)
-        segment_ids.append(0)
+    input_ids = input_ids + [0] * (max_seq_length - len(input_ids))
+    input_mask = input_mask + [0] * (max_seq_length - len(input_mask))
+    segment_ids = segment_ids + [0] * (max_seq_length - len(segment_ids))
 
     assert len(input_ids) == max_seq_length
     assert len(input_mask) == max_seq_length
@@ -47,12 +46,9 @@ def read_train_to_features(args, tokenizer, bert_tokenizer):
             pos_len = len(pos_toks)
             neg_len = len(neg_toks)
 
-            while len(query_toks) < args.max_query_len:
-                query_toks.append(tokenizer.pad)
-            while len(pos_toks) < args.max_seq_len:
-                pos_toks.append(tokenizer.pad)
-            while len(neg_toks) < args.max_seq_len:
-                neg_toks.append(tokenizer.pad)
+            query_toks = query_toks + [tokenizer.pad] * (args.max_query_len - query_len)
+            pos_toks = pos_toks + [tokenizer.pad] * (args.max_seq_len - pos_len)
+            neg_toks = neg_toks + [tokenizer.pad] * (args.max_seq_len - neg_len)
 
             query_idx = tokenizer.convert_tokens_to_ids(query_toks)
             pos_idx = tokenizer.convert_tokens_to_ids(pos_toks)
