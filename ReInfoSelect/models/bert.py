@@ -1,16 +1,13 @@
 import torch
 import torch.nn as nn
 
-from transformers import BertPreTrainedModel, BertModel
+from transformers import AutoModel
 
-class BertForRanking(BertPreTrainedModel):
-    def __init__(self, config):
-        super(BertForRanking, self).__init__(config)
-
-        self.bert = BertModel(config)
-        self.dense = nn.Linear(config.hidden_size, 1)
-
-        self.init_weights()
+class Bert(nn.Module):
+    def __init__(self, pretrained, enc_dim):
+        super(Bert, self).__init__()
+        self._model = AutoModel.from_pretrained(pretrained)
+        self._dense = nn.Linear(enc_dim, 1)
 
     def forward(self, input_ids, attention_mask=None, token_type_ids=None, raw_score=None):
         _, features = self.bert(input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
