@@ -226,7 +226,7 @@ def main():
     if args.model.lower() == 'bert':
         bert_tokenizer = AutoTokenizer.from_pretrained(args.pretrain)
         config = AutoConfig.from_pretrained(args.pretrain)
-        model = Bert.from_pretrained(args.pretrain, config.hidden_size)
+        model = Bert(args.pretrain, config.hidden_size)
 
         m_optim = AdamW(model.parameters(), lr=2e-5)
         dev_data = bert_dev_dataloader(args, bert_tokenizer)
