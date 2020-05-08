@@ -12,7 +12,7 @@ from dataloaders import *
 from models import *
 from metrics import *
 
-from transformers import BertTokenizer, BertConfig, AdamW
+from transformers import *
 
 def dev(args, model, dev_data, device):
     features = []
@@ -224,11 +224,11 @@ def main():
     p_optim = torch.optim.Adam(filter(lambda p: p.requires_grad, policy.parameters()), lr=1e-4)
 
     if args.model.lower() == 'bert':
-        bert_tokenizer = BertTokenizer.from_pretrained(args.pretrain)
-        config = BertConfig.from_pretrained(args.pretrain)
-        model = BertForRanking.from_pretrained(args.pretrain, config=config)
+        bert_tokenizer = AutoTokenizer.from_pretrained(args.pretrain)
+        config = AutoConfig.from_pretrained(args.pretrain)
+        model = Bert.from_pretrained(args.pretrain, config.hidden_size)
 
-        m_optim = AdamW(model.parameters(), lr=5e-5)
+        m_optim = AdamW(model.parameters(), lr=2e-5)
         dev_data = bert_dev_dataloader(args, bert_tokenizer)
     elif args.model.lower() == 'cknrm':
         bert_tokenizer = None

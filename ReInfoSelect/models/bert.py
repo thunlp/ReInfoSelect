@@ -10,8 +10,8 @@ class Bert(nn.Module):
         self._dense = nn.Linear(enc_dim, 1)
 
     def forward(self, input_ids, attention_mask=None, token_type_ids=None, raw_score=None):
-        _, features = self.bert(input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
-        score = self.dense(features).squeeze(-1)
+        _, features = self._model(input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
+        score = self._dense(features).squeeze(-1)
         if raw_score is not None:
             features = torch.cat([features, raw_score.unsqueeze(1)], 1)
         return score, features
