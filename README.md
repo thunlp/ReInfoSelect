@@ -87,7 +87,6 @@ sh ensemble.sh
 Please cite our paper if you find it helpful.
 
 ```
-Zhang, Kaitao, Chenyan Xiong, Zhenghao Liu, and Zhiyuan Liu. "Selective Weak Supervision for Neural Information Retrieval." In Proceedings of The Web Conference 2020, pp. 474-485. 2020.
 @inproceedings{Zhang2020SelectiveWS,
     title = {Selective Weak Supervision for Neural Information Retrieval},
     author = {Kaitao Zhang and Chenyan Xiong and Zhenghao Liu and Zhiyuan Liu},
