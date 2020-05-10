@@ -65,33 +65,33 @@ First, please prepare your data in recommended [format](./data). The MS MARCO or
 
 For cknrm training, set *-model* to *cknrm*, for bert training, set to *bert*, the batch\_size for bert may need to set smaller.
 ```
-bash train.sh
+sh train.sh
 ```
 
 Then, concatenate the neural features with retrieval (SDM or BM25) score and run Coor-Ascent using [RankLib](https://sourceforge.net/p/lemur/wiki/RankLib/).
 ```
-bash coor_ascent.sh
+sh coor_ascent.sh
 ```
 
 For inference:
 ```
-bash inference.sh
+sh inference.sh
 ```
 
 For ensemble:
 ```
-bash ensemble.sh
+sh ensemble.sh
 ```
 
 ## Citation
 Please cite our paper if you find it helpful.
 
 ```
-@inproceedings{zhang2020selective,
+Zhang, Kaitao, Chenyan Xiong, Zhenghao Liu, and Zhiyuan Liu. "Selective Weak Supervision for Neural Information Retrieval." In Proceedings of The Web Conference 2020, pp. 474-485. 2020.
+@inproceedings{Zhang2020SelectiveWS,
     title = {Selective Weak Supervision for Neural Information Retrieval},
     author = {Kaitao Zhang and Chenyan Xiong and Zhenghao Liu and Zhiyuan Liu},
-    journal = {CoRR},
-    volume = {abs/2001.10382},
+    booktitle = {{WWW} '20: The Web Conference 2020},
     year = {2020}
 }
 ```
