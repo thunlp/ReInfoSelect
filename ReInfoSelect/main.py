@@ -137,10 +137,9 @@ def train(args, policy, p_optim, model, m_optim, crit, tokenizer, bert_tokenizer
                 n_scores, _ = model(query_idx, neg_idx, query_len, neg_len)
 
             label = torch.ones(p_scores.size()).to(device)
-            batch_loss = crit(p_scores, n_scores, Variable(label, requires_grad=False))
+            batch_loss = crit(p_scores.mul(weights), n_scores.mul(weights), Variable(label, requires_grad=False))
             if torch.cuda.device_count() > 1:
                 batch_loss = batch_loss.mean()
-            batch_loss = batch_loss.mul(weights).mean()
             batch_loss.backward()
             m_optim.step()
             m_optim.zero_grad()
