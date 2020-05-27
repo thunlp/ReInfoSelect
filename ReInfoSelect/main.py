@@ -88,7 +88,8 @@ def train(args, policy, p_optim, model, m_optim, crit, tokenizer, bert_tokenizer
             train_data = train_dataloader(args, tokenizer)
         else:
             raise ('model must be bert or cknrm!')
-        ndcg, features = dev(args, model, dev_data, device)
+        with torch.no_grad():
+            ndcg, features = dev(args, model, dev_data, device)
         print('init_ndcg: ' + str(ndcg))
         if ndcg > best_ndcg:
             best_ndcg = ndcg
@@ -144,7 +145,8 @@ def train(args, policy, p_optim, model, m_optim, crit, tokenizer, bert_tokenizer
             m_optim.step()
             m_optim.zero_grad()
 
-            ndcg, features = dev(args, model, dev_data, device)
+            with torch.no_grad():
+                ndcg, features = dev(args, model, dev_data, device)
             print('epoch: ' + str(ep+1) + ', step: ' + str(step+1) + ', ndcg: ' + str(ndcg) + ', best_ndcg: ' + str(max(ndcg, best_ndcg)))
             if ndcg > best_ndcg:
                 best_ndcg = ndcg
@@ -249,7 +251,8 @@ def main():
         assert args.checkpoint is not None
         state_dict=torch.load(args.checkpoint)
         model.load_state_dict(state_dict)
-        features = dev(args, model, dev_data, device)
+        with torch.no_grad():
+            features = dev(args, model, dev_data, device)
         with open(args.res_feature, 'w') as writer:
             for feature in features:
                 writer.write(feature+'\n')
