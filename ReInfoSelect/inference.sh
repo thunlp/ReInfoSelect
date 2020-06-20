@@ -3,7 +3,7 @@ python main.py \
         -mode infer \
         -model bert \
         -max_input 1280000 \
-        -pretrain allenai/scibert_scivocab_uncased \
+        -pretrain bert-base-uncased \
         -checkpoint ../checkpoints/reinfoselect_bert.bin \
         -dev ../data/dev_toy.tsv \
         -embed ../data/glove.6B.300d.txt \

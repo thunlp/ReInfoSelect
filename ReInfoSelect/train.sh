@@ -4,7 +4,7 @@ python main.py \
         -model bert \
         -train ../data/triples.train.small.tsv \
         -max_input 1280000 \
-        -pretrain allenai/scibert_scivocab_uncased \
+        -pretrain bert-base-uncased \
         -save_best ../checkpoints/reinfoselect_bert.bin \
         -dev ../data/dev_toy.tsv \
         -qrels ../data/qrels_toy \
