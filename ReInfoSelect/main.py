@@ -36,14 +36,12 @@ def dev(args, model, dev_data, device):
             raise ('model must be bert or cknrm!')
         d_scores = doc_scores.detach().cpu().tolist()
         d_features = doc_features.detach().cpu().tolist()
-
         for (q_id, d_id, l_s, q, d, d_s, d_f) in zip(query_id, doc_id, label, query, doc, d_scores, d_features):
             feature = []
             feature.append(str(l_s))
             feature.append('id:' + q_id)
             for i, fi in enumerate(d_f):
                 feature.append(str(i+1) + ':' + str(fi))
-            feature.append(str(i+2) + ':' + str(r_s))
             features.append(' '.join(feature))
             if q_id in rst_dict:
                 rst_dict[q_id].append((l_s, d_s, d_id, q, d))
